@@ -5,7 +5,11 @@ import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 import android.support.test.uiautomator.UiDevice;
+import android.support.test.uiautomator.UiObject;
+import android.support.test.uiautomator.UiObjectNotFoundException;
+import android.support.test.uiautomator.UiSelector;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -29,7 +33,7 @@ public class ExampleInstrumentedTest {
 
     private UiDevice mDevice;
     private Context mContext = null;
-    String  APP = "com.hqq.uideviceapplication";
+    String  APP = "com.hqq.uiautomatorexample";
 
     public ExampleInstrumentedTest() {
         mDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
@@ -45,14 +49,18 @@ public class ExampleInstrumentedTest {
         mDevice.pressHome();
         Intent myIntent = mContext.getPackageManager().getLaunchIntentForPackage(APP);  //启动app
         mContext.startActivity(myIntent);
-        mDevice.click(275, 1);
 
-//        UiSelector uiSelector = new UiSelector().resourceId(APP + ":id/btn_Button");
-//        UiObject object = new UiObject(uiSelector);
-//        try {
-//            object.click();
-//        } catch (UiObjectNotFoundException e) {
-//            e.printStackTrace();
-//        }
+        UiSelector uiSelector = new UiSelector().resourceId(APP + ":id/btn_Button");
+        UiObject object = new UiObject(uiSelector);
+        try {
+            object.clickAndWaitForNewWindow();
+        } catch (UiObjectNotFoundException e) {
+            e.printStackTrace();
+        }
     }
+    @Before
+    public void testBeafo() {
+
+    }
+
 }
