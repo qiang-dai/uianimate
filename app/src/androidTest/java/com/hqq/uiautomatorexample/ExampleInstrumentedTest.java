@@ -92,6 +92,22 @@ public class ExampleInstrumentedTest {
         return object;
     }
 
+    private UiObject scrollHorizonByClass(String clz, Integer val) {
+        UiSelector uiSelector = new UiSelector().className(clz);
+        UiObject object = new UiObject(uiSelector);
+
+        try {
+            if (val < 0) {
+                object.swipeRight(200);
+            } else {
+                object.swipeLeft(200);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return object;
+    }
+
     private UiObject getScrollObject() {
         UiScrollable noteList = new UiScrollable( new UiSelector().scrollable(true));
         UiObject note = null;
@@ -112,7 +128,13 @@ public class ExampleInstrumentedTest {
     public void testMainActivity() {
         mDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         mContext = InstrumentationRegistry.getContext();
-        mDevice.pressHome();
+        scrollHorizonByClass("android.widget.RelativeLayout", 1);
+//        try {
+//            mDevice.wakeUp();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+        //mDevice.pressHome();
         //Intent myIntent = mContext.getPackageManager().getLaunchIntentForPackage(APP);  //启动app
         //mContext.startActivity(myIntent);
 
