@@ -118,10 +118,11 @@ public class ExampleInstrumentedTest {
 
         //clickById(APP + ":id/btn_Button");
         //mDevice.pressHome();
-        clickById("com.google.android.apps.nexuslauncher:id/page_indicator");
-        clickByText("Settings");
-        getScrollObject();
-        clickByText("Display");
+//        clickById("com.google.android.apps.nexuslauncher:id/page_indicator");
+//        clickByText("Settings");
+//        getScrollObject();
+//        clickByText("Display");
+//        clickByText("掌上财富");
 
 //
 //        for(int i = 0; i < 10; i++) {
