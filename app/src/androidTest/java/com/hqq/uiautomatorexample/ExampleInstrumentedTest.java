@@ -8,6 +8,7 @@ import android.support.test.uiautomator.UiCollection;
 import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject;
 import android.support.test.uiautomator.UiObjectNotFoundException;
+import android.support.test.uiautomator.UiScrollable;
 import android.support.test.uiautomator.UiSelector;
 import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.Direction;
@@ -22,6 +23,7 @@ import org.junit.runner.RunWith;
 import java.util.List;
 import java.util.logging.Logger;
 
+import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.*;
 
 /**
@@ -90,6 +92,22 @@ public class ExampleInstrumentedTest {
         return object;
     }
 
+    private UiObject getScrollObject() {
+        UiScrollable noteList = new UiScrollable( new UiSelector().scrollable(true));
+        UiObject note = null;
+        try {
+            if (noteList.exists()) {
+                note = noteList.getChildByText(new UiSelector().className("android.widget.TextView"), "System", true);
+            } else {
+                note = new UiObject(new UiSelector().text("System"));
+            }
+            assertThat(note, notNullValue());
+            note.longClick();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return note;
+    }
     @Test
     public void testMainActivity() {
         mDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
@@ -102,6 +120,7 @@ public class ExampleInstrumentedTest {
         //mDevice.pressHome();
         clickById("com.google.android.apps.nexuslauncher:id/page_indicator");
         clickByText("Settings");
+        getScrollObject();
         clickByText("Display");
 
 //
