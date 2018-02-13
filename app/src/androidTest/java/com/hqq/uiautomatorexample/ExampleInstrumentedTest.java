@@ -391,6 +391,8 @@ public class ExampleInstrumentedTest {
             approx.convertTo(approx, CvType.CV_32F);
 
             for (MatOfPoint contour: contours) {
+                logger.info("contour:" + contour.toString());
+
                 // 边框的凸包
                 Imgproc.convexHull(contour, hull);
 
@@ -410,7 +412,7 @@ public class ExampleInstrumentedTest {
                 // 筛选出面积大于某一阈值的，且四边形的各个角度都接近直角的凸四边形
                 MatOfPoint approxf1 = new MatOfPoint();
                 approx.convertTo(approxf1, CvType.CV_32S);
-                if (approx.rows() == 4 && Math.abs(Imgproc.contourArea(approx)) > 40000 &&
+                if (approx.rows() == 4 && Math.abs(Imgproc.contourArea(approx)) > 400 &&
                         Imgproc.isContourConvex(approxf1)) {
                     double maxCosine = 0;
                     for (int j = 2; j < 5; j++) {
@@ -424,6 +426,7 @@ public class ExampleInstrumentedTest {
                         squares.add(approxf1);
                         hulls.add(tmp);
                     }
+                    logger.info("approxf1:" + approxf1.toString() + ", size:" + Imgproc.contourArea(approx));
                 }
             }
             imwrite(folder.getPath() + "/uianim7.png", img);
