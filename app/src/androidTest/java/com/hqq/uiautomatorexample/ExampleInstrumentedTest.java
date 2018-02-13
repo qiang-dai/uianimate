@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Environment;
 import android.support.test.InstrumentationRegistry;
@@ -26,11 +27,20 @@ import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject2;
 import android.support.test.uiautomator.Until;
 import android.support.v4.app.ActivityCompat;
+import android.util.Log;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.android.OpenCVLoader;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -48,6 +58,8 @@ import static android.support.test.InstrumentationRegistry.getTargetContext;
 import static android.support.test.runner.lifecycle.Stage.RESUMED;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.*;
+import static org.opencv.imgcodecs.Imgcodecs.imread;
+import static org.opencv.imgcodecs.Imgcodecs.imwrite;
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -73,89 +85,89 @@ public class ExampleInstrumentedTest {
     public ExampleInstrumentedTest() {
         mDevice = UiDevice.getInstance(getInstrumentation());
         mContext = InstrumentationRegistry.getContext();
-        mDevice.pressHome();
+        //Device.pressHome();
 
     }
 
-    private UiObject clickById(String objId) {
-        UiSelector uiSelector = new UiSelector().resourceId(objId);
-        UiObject object = new UiObject(uiSelector);
-        logger.info("objId:" + objId + ",object:" + object);
-        try {
-            object.clickAndWaitForNewWindow();
-        } catch (UiObjectNotFoundException e) {
-            e.printStackTrace();
-        }
-        return object;
-    }
-
-    private UiObject clickByDescription(String text) {
-        UiSelector uiSelector = new UiSelector().description(text);
-        UiObject object = new UiObject(uiSelector);
-        logger.info("text:" + text + ",object:" + object);
-
-        try {
-            object.clickAndWaitForNewWindow();
-        } catch (UiObjectNotFoundException e) {
-            e.printStackTrace();
-        }
-        return object;
-    }
-
-    private UiObject clickByText(String text) {
-        UiSelector uiSelector = new UiSelector().text(text);
-        UiObject object = new UiObject(uiSelector);
-        logger.info("text:" + text + ",object:" + object);
-
-        try {
-            object.clickAndWaitForNewWindow();
-        } catch (UiObjectNotFoundException e) {
-            e.printStackTrace();
-        }
-        return object;
-    }
-
-    private UiObject scrollVerticalByInstanceToEnd() {
-        UiObject uiObject = null;
-        try {
-            new UiScrollable(new UiSelector().scrollable(true).instance(0)).scrollToEnd(10);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return uiObject;
-    }
-    private UiObject scrollHorizonByClass(String clz, Integer val) {
-        UiSelector uiSelector = new UiSelector().className(clz);
-        UiObject object = new UiObject(uiSelector);
-
-        try {
-            if (val < 0) {
-                object.swipeRight(200);
-            } else {
-                object.swipeLeft(200);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return object;
-    }
-
-    private UiObject getScrollObject() {
-        UiScrollable noteList = new UiScrollable( new UiSelector().scrollable(true));
-        UiObject note = null;
-        try {
-            if (noteList.exists()) {
-                note = noteList.getChildByText(new UiSelector().className("android.widget.TextView"), "System", true);
-            } else {
-                note = new UiObject(new UiSelector().text("System"));
-            }
-            assertThat(note, notNullValue());
-            note.longClick();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return note;
-    }
+//    private UiObject clickById(String objId) {
+//        UiSelector uiSelector = new UiSelector().resourceId(objId);
+//        UiObject object = new UiObject(uiSelector);
+//        logger.info("objId:" + objId + ",object:" + object);
+//        try {
+//            object.clickAndWaitForNewWindow();
+//        } catch (UiObjectNotFoundException e) {
+//            e.printStackTrace();
+//        }
+//        return object;
+//    }
+//
+//    private UiObject clickByDescription(String text) {
+//        UiSelector uiSelector = new UiSelector().description(text);
+//        UiObject object = new UiObject(uiSelector);
+//        logger.info("text:" + text + ",object:" + object);
+//
+//        try {
+//            object.clickAndWaitForNewWindow();
+//        } catch (UiObjectNotFoundException e) {
+//            e.printStackTrace();
+//        }
+//        return object;
+//    }
+//
+//    private UiObject clickByText(String text) {
+//        UiSelector uiSelector = new UiSelector().text(text);
+//        UiObject object = new UiObject(uiSelector);
+//        logger.info("text:" + text + ",object:" + object);
+//
+//        try {
+//            object.clickAndWaitForNewWindow();
+//        } catch (UiObjectNotFoundException e) {
+//            e.printStackTrace();
+//        }
+//        return object;
+//    }
+//
+//    private UiObject scrollVerticalByInstanceToEnd() {
+//        UiObject uiObject = null;
+//        try {
+//            new UiScrollable(new UiSelector().scrollable(true).instance(0)).scrollToEnd(10);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return uiObject;
+//    }
+//    private UiObject scrollHorizonByClass(String clz, Integer val) {
+//        UiSelector uiSelector = new UiSelector().className(clz);
+//        UiObject object = new UiObject(uiSelector);
+//
+//        try {
+//            if (val < 0) {
+//                object.swipeRight(200);
+//            } else {
+//                object.swipeLeft(200);
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return object;
+//    }
+//
+//    private UiObject getScrollObject() {
+//        UiScrollable noteList = new UiScrollable( new UiSelector().scrollable(true));
+//        UiObject note = null;
+//        try {
+//            if (noteList.exists()) {
+//                note = noteList.getChildByText(new UiSelector().className("android.widget.TextView"), "System", true);
+//            } else {
+//                note = new UiObject(new UiSelector().text("System"));
+//            }
+//            assertThat(note, notNullValue());
+//            note.longClick();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return note;
+//    }
 
     private void storeBitmap(Bitmap bitmap, String path)
     {
@@ -187,115 +199,115 @@ public class ExampleInstrumentedTest {
         }
     }
 
-    private static Activity getCurrentActivity()
-    {
-        getInstrumentation().runOnMainSync(new Runnable()
-        {
-            public void run()
-            {
-                Collection resumedActivities = ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(
-                        RESUMED);
-                if (resumedActivities.iterator().hasNext())
-                {
-                    Activity currentActivity = (Activity) resumedActivities.iterator().next();
-                }
-            }
-        });
+//    private static Activity getCurrentActivity()
+//    {
+//        getInstrumentation().runOnMainSync(new Runnable()
+//        {
+//            public void run()
+//            {
+//                Collection resumedActivities = ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(
+//                        RESUMED);
+//                if (resumedActivities.iterator().hasNext())
+//                {
+//                    Activity currentActivity = (Activity) resumedActivities.iterator().next();
+//                }
+//            }
+//        });
+//
+//        return null;
+//    }
 
-        return null;
-    }
-
-    private File getStoragePath() {
-        String removableStoragePath;
-        File fileList[] = new File("/storage/").listFiles();
-        //logger.info("fileList:" + fileList.length);
-//        if (fileList == null) {
-//            return new File("/storage/sdcard0/test/");
+//    private File getStoragePath() {
+//        String removableStoragePath;
+//        File fileList[] = new File("/storage/").listFiles();
+//        //logger.info("fileList:" + fileList.length);
+////        if (fileList == null) {
+////            return new File("/storage/sdcard0/test/");
+////        }
+//        for (File file : fileList) {
+//            logger.info("file:" + file);
+//
+//            if(!file.getAbsolutePath().equalsIgnoreCase(Environment.getExternalStorageDirectory().getAbsolutePath()) && file.isDirectory() && file.canWrite()) {
+//                return file;
+//            }
 //        }
-        for (File file : fileList) {
-            logger.info("file:" + file);
-
-            if(!file.getAbsolutePath().equalsIgnoreCase(Environment.getExternalStorageDirectory().getAbsolutePath()) && file.isDirectory() && file.canWrite()) {
-                return file;
-            }
-        }
-        logger.info("return final external directory");
-
-        return Environment.getExternalStorageDirectory();
-    }
-
-    private static final int REQUEST_EXTERNAL_STORAGE = 1;
-    private static String[] PERMISSIONS_STORAGE = {
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-    };
-    public static void verifyStoragePermissions(Activity activity) {
-// Check if we have write permission
-        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-// We don't have permission so prompt the user
-            ActivityCompat.requestPermissions(
-                    activity,
-                    PERMISSIONS_STORAGE,
-                    REQUEST_EXTERNAL_STORAGE
-            );
-        }
-    }
+//        logger.info("return final external directory");
+//
+//        return Environment.getExternalStorageDirectory();
+//    }
+//
+//    private static final int REQUEST_EXTERNAL_STORAGE = 1;
+//    private static String[] PERMISSIONS_STORAGE = {
+//            Manifest.permission.READ_EXTERNAL_STORAGE,
+//            Manifest.permission.WRITE_EXTERNAL_STORAGE
+//    };
+//    public static void verifyStoragePermissions(Activity activity) {
+//// Check if we have write permission
+//        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+//        if (permission != PackageManager.PERMISSION_GRANTED) {
+//// We don't have permission so prompt the user
+//            ActivityCompat.requestPermissions(
+//                    activity,
+//                    PERMISSIONS_STORAGE,
+//                    REQUEST_EXTERNAL_STORAGE
+//            );
+//        }
+//    }
 
 
-    protected static boolean shouldAskPermissions() {
-        return (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1);
-    }
+//    protected static boolean shouldAskPermissions() {
+//        return (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1);
+//    }
 
-    public static Activity getActivity() {
-        try {
-            Class activityThreadClass = Class.forName("android.app.ActivityThread");
-            Object activityThread = activityThreadClass.getMethod("currentActivityThread").invoke(null);
-            Field activitiesField = activityThreadClass.getDeclaredField("mActivities");
-            activitiesField.setAccessible(true);
+//    public static Activity getActivity() {
+//        try {
+//            Class activityThreadClass = Class.forName("android.app.ActivityThread");
+//            Object activityThread = activityThreadClass.getMethod("currentActivityThread").invoke(null);
+//            Field activitiesField = activityThreadClass.getDeclaredField("mActivities");
+//            activitiesField.setAccessible(true);
+//
+//            Map<Object, Object> activities = (Map<Object, Object>) activitiesField.get(activityThread);
+//            if (activities == null)
+//                return null;
+//
+//            for (Object activityRecord : activities.values()) {
+//                Class activityRecordClass = activityRecord.getClass();
+//                Field pausedField = activityRecordClass.getDeclaredField("paused");
+//                pausedField.setAccessible(true);
+//                if (!pausedField.getBoolean(activityRecord)) {
+//                    Field activityField = activityRecordClass.getDeclaredField("activity");
+//                    activityField.setAccessible(true);
+//                    Activity activity = (Activity) activityField.get(activityRecord);
+//                    return activity;
+//                }
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//        return null;
+//    }
 
-            Map<Object, Object> activities = (Map<Object, Object>) activitiesField.get(activityThread);
-            if (activities == null)
-                return null;
-
-            for (Object activityRecord : activities.values()) {
-                Class activityRecordClass = activityRecord.getClass();
-                Field pausedField = activityRecordClass.getDeclaredField("paused");
-                pausedField.setAccessible(true);
-                if (!pausedField.getBoolean(activityRecord)) {
-                    Field activityField = activityRecordClass.getDeclaredField("activity");
-                    activityField.setAccessible(true);
-                    Activity activity = (Activity) activityField.get(activityRecord);
-                    return activity;
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    //@TargetApi(23)
-    protected void askPermissions() {
-        String[] permissions = {
-                "android.permission.READ_EXTERNAL_STORAGE",
-                "android.permission.WRITE_EXTERNAL_STORAGE"
-        };
-  /*  int requestCode = 200;
-    requestPermissions(permissions, requestCode);*/
-        // Check if we have write permission
-        int permission = ActivityCompat.checkSelfPermission(getTargetContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            // We don't have permission so prompt the user
-            //ActivityManager am = (ActivityManager)getTargetContext().getSystemService(Context.ACTIVITY_SERVICE);
-            //ComponentName cn = am.getRunningTasks(1).get(0).topActivity;
-
-            ActivityCompat.requestPermissions(
-                    getActivity(), permissions, 1);
-        }
-    }
+//    //@TargetApi(23)
+//    protected void askPermissions() {
+//        String[] permissions = {
+//                "android.permission.READ_EXTERNAL_STORAGE",
+//                "android.permission.WRITE_EXTERNAL_STORAGE"
+//        };
+//  /*  int requestCode = 200;
+//    requestPermissions(permissions, requestCode);*/
+//        // Check if we have write permission
+//        int permission = ActivityCompat.checkSelfPermission(getTargetContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
+//
+//        if (permission != PackageManager.PERMISSION_GRANTED) {
+//            // We don't have permission so prompt the user
+//            //ActivityManager am = (ActivityManager)getTargetContext().getSystemService(Context.ACTIVITY_SERVICE);
+//            //ComponentName cn = am.getRunningTasks(1).get(0).topActivity;
+//
+//            ActivityCompat.requestPermissions(
+//                    getActivity(), permissions, 1);
+//        }
+//    }
 
     @Test
     public void testMainActivity() {
@@ -312,10 +324,10 @@ public class ExampleInstrumentedTest {
 //            askPermissions();
 //        }
 
-        mDevice.pressHome();
-        mDevice.openNotification();
-        clickByDescription("Apps");
-        scrollVerticalByInstanceToEnd();
+        //mDevice.pressHome();
+        //mDevice.openNotification();
+//        clickByDescription("Apps");
+//        scrollVerticalByInstanceToEnd();
 
         Bitmap bitmap;
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -325,10 +337,21 @@ public class ExampleInstrumentedTest {
             File folder = new File(getTargetContext().getExternalCacheDir().getAbsolutePath() + "/screenshots/");
             if (!folder.exists())
             {
-                folder.mkdirs();
+//                folder.mkdirs();
             }
             logger.info("folder.getPath:" + folder.getPath());
             storeBitmap(bitmap, folder.getPath() + "/uianim.png");
+
+            Mat img = imread(folder.getPath() + "/uianim.png");// 读入图片，将其转换为Mat
+            double scale = 0.5;
+            Size dsize = new Size(img.width() * scale, img.height() * scale); // 设置新图片的大小
+            Mat img2 = new Mat(dsize, CvType.CV_16S);// 创建一个新的Mat（opencv的矩阵数据类型）
+            Imgproc.resize(img, img2,dsize);
+            imwrite(folder.getPath() + "/uianim2.png", img2);
+
+            //ImageView imgview = (ImageView) findViewById(R.layout.activity_main3);
+            // 显示照片
+            //imgview.setImageBitmap(bitmap);
 
         }
 //        String fileName = Environment.getExternalStoragePublicDirectory(DIRECTORY_DOWNLOADS) + "/unanim3.png";
@@ -339,9 +362,12 @@ public class ExampleInstrumentedTest {
 //        {
 //            folder.mkdirs();
 //        }
-        File folder = getStoragePath();
-        logger.info("fileName:" + folder);
-        mDevice.takeScreenshot(new File("/storage/emulated/0/Android/data/com.hqq.uiautomatorexample/cache/screenshots/z.png"));
+//        File folder = getStoragePath();
+//        logger.info("fileName:" + folder);
+//        mDevice.takeScreenshot(new File("/storage/emulated/0/Android/data/com.hqq.uiautomatorexample/cache/screenshots/z.png"));
+
+//        TextView tv = new TextView(mContext);
+//        tv.findViewById(R.layout.activity_main3);
         //mDevice.takeScreenshot(new File(folder + "/zz.png"));
         //Intent myIntent = mContext.getPackageManager().getLaunchIntentForPackage(APP);  //启动app
         //mContext.startActivity(myIntent);
@@ -351,7 +377,38 @@ public class ExampleInstrumentedTest {
     }
     @Before
     public void testBeafo() {
+        boolean ret = OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_3_0, getTargetContext(), mLoaderCallback);
+        logger.info("ret:" + ret);
 
+        // Launch the app
+        String APP_PACKAGE = "com.hqq.uiautomatorexample";
+
+        // Launch the app
+        Context context = InstrumentationRegistry.getContext();
+        final Intent intent = new Intent()
+                .setClassName(APP_PACKAGE, APP_PACKAGE + ".MainActivity")
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent);
+
+        // Wait for the app to appear
+        mDevice.wait(Until.hasObject(By.pkg(APP_PACKAGE).depth(0)), 1000);
+        mContext = InstrumentationRegistry.getTargetContext();
     }
+    private static final String TAG = "OCVSample::Activity";
+    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(getTargetContext()) {
+        @Override
+        public void onManagerConnected(int status) {
+            switch (status) {
+                case LoaderCallbackInterface.SUCCESS: {
+                    Log.i(TAG, "OpenCV loaded successfully");
+                }
+                break;
+                default: {
+                    super.onManagerConnected(status);
+                }
+                break;
+            }
+        }
+    };
 
 }
