@@ -39,6 +39,11 @@ import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfInt;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import java.io.BufferedOutputStream;
@@ -46,6 +51,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +66,8 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.*;
 import static org.opencv.imgcodecs.Imgcodecs.imread;
 import static org.opencv.imgcodecs.Imgcodecs.imwrite;
+import static org.opencv.imgproc.Imgproc.CHAIN_APPROX_SIMPLE;
+import static org.opencv.imgproc.Imgproc.RETR_EXTERNAL;
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -309,6 +317,16 @@ public class ExampleInstrumentedTest {
 //        }
 //    }
 
+    // 根据三个点计算中间那个点的夹角 pt1 pt0 pt2
+    private static double getAngle(Point pt1, Point pt2, Point pt0)
+    {
+        double dx1 = pt1.x - pt0.x;
+        double dy1 = pt1.y - pt0.y;
+        double dx2 = pt2.x - pt0.x;
+        double dy2 = pt2.y - pt0.y;
+        return (dx1*dx2 + dy1*dy2)/Math.sqrt((dx1*dx1 + dy1*dy1)*(dx2*dx2 + dy2*dy2) + 1e-10);
+    }
+
     @Test
     public void testMainActivity() {
         mDevice = UiDevice.getInstance(getInstrumentation());
@@ -345,9 +363,70 @@ public class ExampleInstrumentedTest {
             Mat img = imread(folder.getPath() + "/uianim.png");// 读入图片，将其转换为Mat
             double scale = 0.5;
             Size dsize = new Size(img.width() * scale, img.height() * scale); // 设置新图片的大小
-            Mat img2 = new Mat(dsize, CvType.CV_16S);// 创建一个新的Mat（opencv的矩阵数据类型）
-            Imgproc.resize(img, img2,dsize);
-            imwrite(folder.getPath() + "/uianim2.png", img2);
+//            Mat img2 = new Mat(dsize, CvType.CV_16S);// 创建一个新的Mat（opencv的矩阵数据类型）
+//            Imgproc.resize(img, img2,dsize);
+//            imwrite(folder.getPath() + "/uianim2.png", img2);
+
+            //彩色转灰度
+            Imgproc.cvtColor(img, img, Imgproc.COLOR_BGR2GRAY);
+            imwrite(folder.getPath() + "/uianim3.png", img);
+            // 高斯滤波，降噪
+            Imgproc.GaussianBlur(img, img, new Size(3,3), 2, 2);
+            imwrite(folder.getPath() + "/uianim4.png", img);
+            // Canny边缘检测
+            Imgproc.Canny(img, img, 20, 60, 3, false);
+            imwrite(folder.getPath() + "/uianim5.png", img);
+            // 膨胀，连接边缘
+            Imgproc.dilate(img, img, new Mat(), new Point(-1,-1), 3, 1, new Scalar(1));
+            imwrite(folder.getPath() + "/uianim6.png", img);
+            List<MatOfPoint> contours = new ArrayList<>();
+            Mat hierarchy = new Mat();
+            Imgproc.findContours(img, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+
+            // 找出轮廓对应凸包的四边形拟合
+            List<MatOfPoint> squares = new ArrayList<>();
+            List<MatOfPoint> hulls = new ArrayList<>();
+            MatOfInt hull = new MatOfInt();
+            MatOfPoint2f approx = new MatOfPoint2f();
+            approx.convertTo(approx, CvType.CV_32F);
+
+            for (MatOfPoint contour: contours) {
+                // 边框的凸包
+                Imgproc.convexHull(contour, hull);
+
+                // 用凸包计算出新的轮廓点
+                Point[] contourPoints = contour.toArray();
+                int[] indices = hull.toArray();
+                List<Point> newPoints = new ArrayList<>();
+                for (int index : indices) {
+                    newPoints.add(contourPoints[index]);
+                }
+                MatOfPoint2f contourHull = new MatOfPoint2f();
+                contourHull.fromList(newPoints);
+
+                // 多边形拟合凸包边框(此时的拟合的精度较低)
+                Imgproc.approxPolyDP(contourHull, approx, Imgproc.arcLength(contourHull, true)*0.02, true);
+
+                // 筛选出面积大于某一阈值的，且四边形的各个角度都接近直角的凸四边形
+                MatOfPoint approxf1 = new MatOfPoint();
+                approx.convertTo(approxf1, CvType.CV_32S);
+                if (approx.rows() == 4 && Math.abs(Imgproc.contourArea(approx)) > 40000 &&
+                        Imgproc.isContourConvex(approxf1)) {
+                    double maxCosine = 0;
+                    for (int j = 2; j < 5; j++) {
+                        double cosine = Math.abs(getAngle(approxf1.toArray()[j%4], approxf1.toArray()[j-2], approxf1.toArray()[j-1]));
+                        maxCosine = Math.max(maxCosine, cosine);
+                    }
+                    // 角度大概72度
+                    if (maxCosine < 0.3) {
+                        MatOfPoint tmp = new MatOfPoint();
+                        contourHull.convertTo(tmp, CvType.CV_32S);
+                        squares.add(approxf1);
+                        hulls.add(tmp);
+                    }
+                }
+            }
+            imwrite(folder.getPath() + "/uianim7.png", img);
 
             //ImageView imgview = (ImageView) findViewById(R.layout.activity_main3);
             // 显示照片
