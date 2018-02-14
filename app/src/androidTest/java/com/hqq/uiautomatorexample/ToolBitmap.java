@@ -294,7 +294,7 @@ public class ToolBitmap {
 //
 //        return end;
 //    }
-    public static Point searchCenter(String path, Point start) {
+    public static Point searchTop(String path, Point start) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
         Bitmap mBitmap = BitmapFactory.decodeFile(path, options);
@@ -344,7 +344,8 @@ public class ToolBitmap {
                     if (min < 20) {
                         continue;
                     }
-                    Point top = new Point(j, i);
+                    Point top = new Point(j-10, i-5);
+                    point = top;
                     String dir = ToolShell.getFileDirectory(path);
 
                     Mat source;
@@ -353,24 +354,35 @@ public class ToolBitmap {
                             new org.opencv.core.Point(top.x + 50, top.y + 50),
                             new Scalar(255, 0, 0));
 
-                    top.x = 50;
-                    top.y = 80;
-                    Imgproc.rectangle(source, top,
-                            new org.opencv.core.Point(top.x + 50, top.y + 50),
-                            new Scalar(0, 255, 0));
-
-                    top.x = 150;
-                    top.y = 180;
-                    Imgproc.rectangle(source, top,
-                            new org.opencv.core.Point(top.x + 50, top.y + 50),
-                            new Scalar(0, 0, 255));
+//                    top.x = 50;
+//                    top.y = 80;
+//                    Imgproc.rectangle(source, top,
+//                            new org.opencv.core.Point(top.x + 50, top.y + 50),
+//                            new Scalar(0, 255, 0));
+//
+//                    top.x = 150;
+//                    top.y = 180;
+//                    Imgproc.rectangle(source, top,
+//                            new org.opencv.core.Point(top.x + 50, top.y + 50),
+//                            new Scalar(0, 0, 255));
 //
                     String resPath = dir + String.format("result4.png", i);
+
+                    //定点 point
+                    //计算中心
+                    Double diff_x = point.x - start.x;
+                    if (diff_x < 0) {
+                        diff_x = -diff_x;
+                    }
+                    Double diff_y = diff_x*3/5;
+                    point.y = start.y - diff_y;
+                    Imgproc.rectangle(source, point,
+                            new org.opencv.core.Point(point.x + 50, point.y + 50),
+                            new Scalar(0, 0, 0));
+
                     logger.info("opencvCenter resPath:" + resPath);
                     imwrite(resPath, source);
 
-                    point.x = j;
-                    point.y = i;
                     return point;
                 }
 

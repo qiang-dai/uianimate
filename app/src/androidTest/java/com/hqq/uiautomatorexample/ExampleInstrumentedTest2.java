@@ -78,7 +78,7 @@ public class ExampleInstrumentedTest2 {
         //检测白点
         end = ToolBitmap.detectedWhiteDot(path);
         //检测opencv边缘中心
-        end = ToolBitmap.searchCenter(path, start);
+        end = ToolBitmap.searchTop(path, start);
         //end = ToolBitmap.opencvCenter(path, start);
         logger.info("opencvCenter final start:" + start);
         logger.info("opencvCenter final end:" + end);
@@ -87,7 +87,7 @@ public class ExampleInstrumentedTest2 {
         Double diff_y = end.y - start.y;
         Double diff = Math.sqrt(diff_x*diff_x + diff_y*diff_y);
         //定位当前位置
-        //ToolBitmap.searchCenter(path);
+        //ToolBitmap.searchTop(path);
         //点击
 //        Double cm = diff /(1920/15.38);
 //        cm /= 20;
