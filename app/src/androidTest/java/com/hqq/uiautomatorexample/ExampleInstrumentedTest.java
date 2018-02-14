@@ -97,85 +97,7 @@ public class ExampleInstrumentedTest {
 
     }
 
-//    private UiObject clickById(String objId) {
-//        UiSelector uiSelector = new UiSelector().resourceId(objId);
-//        UiObject object = new UiObject(uiSelector);
-//        logger.info("objId:" + objId + ",object:" + object);
-//        try {
-//            object.clickAndWaitForNewWindow();
-//        } catch (UiObjectNotFoundException e) {
-//            e.printStackTrace();
-//        }
-//        return object;
-//    }
-//
-//    private UiObject clickByDescription(String text) {
-//        UiSelector uiSelector = new UiSelector().description(text);
-//        UiObject object = new UiObject(uiSelector);
-//        logger.info("text:" + text + ",object:" + object);
-//
-//        try {
-//            object.clickAndWaitForNewWindow();
-//        } catch (UiObjectNotFoundException e) {
-//            e.printStackTrace();
-//        }
-//        return object;
-//    }
-//
-//    private UiObject clickByText(String text) {
-//        UiSelector uiSelector = new UiSelector().text(text);
-//        UiObject object = new UiObject(uiSelector);
-//        logger.info("text:" + text + ",object:" + object);
-//
-//        try {
-//            object.clickAndWaitForNewWindow();
-//        } catch (UiObjectNotFoundException e) {
-//            e.printStackTrace();
-//        }
-//        return object;
-//    }
-//
-//    private UiObject scrollVerticalByInstanceToEnd() {
-//        UiObject uiObject = null;
-//        try {
-//            new UiScrollable(new UiSelector().scrollable(true).instance(0)).scrollToEnd(10);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return uiObject;
-//    }
-//    private UiObject scrollHorizonByClass(String clz, Integer val) {
-//        UiSelector uiSelector = new UiSelector().className(clz);
-//        UiObject object = new UiObject(uiSelector);
-//
-//        try {
-//            if (val < 0) {
-//                object.swipeRight(200);
-//            } else {
-//                object.swipeLeft(200);
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return object;
-//    }
-//
-//    private UiObject getScrollObject() {
-//        UiScrollable noteList = new UiScrollable( new UiSelector().scrollable(true));
-//        UiObject note = null;
-//        try {
-//            if (noteList.exists()) {
-//                note = noteList.getChildByText(new UiSelector().className("android.widget.TextView"), "System", true);
-//            } else {
-//                note = new UiObject(new UiSelector().text("System"));
-//            }
-//            assertThat(note, notNullValue());
-//            note.longClick();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return note;
-//    }
+
 
     private void storeBitmap(Bitmap bitmap, String path)
     {
@@ -348,7 +270,7 @@ public class ExampleInstrumentedTest {
 //        scrollVerticalByInstanceToEnd();
 
         Bitmap bitmap;
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2)
+        //if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2)
         {
             bitmap = getInstrumentation().getUiAutomation().takeScreenshot();
 
@@ -358,9 +280,9 @@ public class ExampleInstrumentedTest {
 //                folder.mkdirs();
             }
             logger.info("folder.getPath:" + folder.getPath());
-            storeBitmap(bitmap, folder.getPath() + "/uianim.png");
+            storeBitmap(bitmap, folder.getPath() + "/uianimx.png");
 
-            Mat img = imread(folder.getPath() + "/uianim.png");// 读入图片，将其转换为Mat
+            Mat img = imread(folder.getPath() + "/uianimx.png");// 读入图片，将其转换为Mat
             double scale = 0.5;
             Size dsize = new Size(img.width() * scale, img.height() * scale); // 设置新图片的大小
 //            Mat img2 = new Mat(dsize, CvType.CV_16S);// 创建一个新的Mat（opencv的矩阵数据类型）
