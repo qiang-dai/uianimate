@@ -281,7 +281,7 @@ public class ExampleInstrumentedTest {
 //                folder.mkdirs();
             }
             String dir = ToolShell.getPath("screenshots/");
-            logger.info("folder.getPath:" + folder.getPath());
+            logger.info("folder.getPath:" + dir);
             storeBitmap(bitmap, dir + "/uianimx.png");
 
             Mat img = imread(dir + "/uianimx.png");// 读入图片，将其转换为Mat
@@ -289,20 +289,20 @@ public class ExampleInstrumentedTest {
             Size dsize = new Size(img.width() * scale, img.height() * scale); // 设置新图片的大小
 //            Mat img2 = new Mat(dsize, CvType.CV_16S);// 创建一个新的Mat（opencv的矩阵数据类型）
 //            Imgproc.resize(img, img2,dsize);
-//            imwrite(folder.getPath() + "/uianim2.png", img2);
+//            imwrite(dir + "/uianim2.png", img2);
 
             //彩色转灰度
             Imgproc.cvtColor(img, img, Imgproc.COLOR_BGR2GRAY);
-            imwrite(folder.getPath() + "/uianim3.png", img);
+            imwrite(dir + "/uianim3.png", img);
             // 高斯滤波，降噪
             Imgproc.GaussianBlur(img, img, new Size(3,3), 2, 2);
-            imwrite(folder.getPath() + "/uianim4.png", img);
+            imwrite(dir + "/uianim4.png", img);
             // Canny边缘检测
             Imgproc.Canny(img, img, 20, 60, 3, false);
-            imwrite(folder.getPath() + "/uianim5.png", img);
+            imwrite(dir + "/uianim5.png", img);
             // 膨胀，连接边缘
             Imgproc.dilate(img, img, new Mat(), new Point(-1,-1), 3, 1, new Scalar(1));
-            imwrite(folder.getPath() + "/uianim6.png", img);
+            imwrite(dir + "/uianim6.png", img);
             List<MatOfPoint> contours = new ArrayList<>();
             Mat hierarchy = new Mat();
             Imgproc.findContours(img, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
@@ -356,7 +356,7 @@ public class ExampleInstrumentedTest {
                     }
                 }
             }
-            imwrite(folder.getPath() + "/uianim7.png", img);
+            imwrite(dir + "/uianim7.png", img);
 
             //ImageView imgview = (ImageView) findViewById(R.layout.activity_main3);
             // 显示照片
