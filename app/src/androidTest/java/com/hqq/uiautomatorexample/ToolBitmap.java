@@ -16,6 +16,8 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import static android.support.test.InstrumentationRegistry.getInstrumentation;
@@ -64,6 +66,7 @@ public class ToolBitmap {
     public static Mat getScreenshot(String picPath) {
         Bitmap bitmap;
         bitmap = getInstrumentation().getUiAutomation().takeScreenshot();
+        //遍历
 
         logger.info("folder.getPath:" + picPath);
 
@@ -126,6 +129,17 @@ public class ToolBitmap {
         imwrite(resPath, source);
     }
 
+    public static Integer getMaxCnt(Map<Integer, Integer> cntMap) {
+        Integer max = 0;
+        for (Integer k : cntMap.keySet()) {
+            Integer v = cntMap.get(k);
+            if (max < v ) {
+                max = v;
+            }
+        }
+        return max;
+    }
+
     public static void searchCenter(Bitmap mBitmap) {
         int mBitmapWidth = 0;
         int mBitmapHeight = 0;
@@ -142,6 +156,9 @@ public class ToolBitmap {
         mArrayColor = new int[mArrayColorLengh];
         int count = 0;
         for (int i = 0; i < mBitmapHeight; i++) {
+
+            //统计不同颜色点的个数
+            Map<Integer, Integer> pixelCntMap = new HashMap<>();
             for (int j = 0; j < mBitmapWidth; j++) {
                 //获得Bitmap 图片中每一个点的color颜色值
                 int color = mBitmap.getPixel(j, i);
@@ -152,8 +169,20 @@ public class ToolBitmap {
                 int g = Color.green(color);
                 int b = Color.blue(color);
 
+                Integer cnt = pixelCntMap.get(color);
+                if (cnt == null) {
+                    cnt = 1;
+                } else {
+                    cnt += 1;
+                }
+                pixelCntMap.put(color, cnt);
+
                 count++;
             }
+            //计算最大量颜色的比例
+            Integer max = getMaxCnt(pixelCntMap);
+            logger.info("["+ i + "]" + "getMaxCnt max:" + max + ", rate:" + max*100.0/mBitmapWidth + "%");
+
         }
         startTime = System.currentTimeMillis();
     }

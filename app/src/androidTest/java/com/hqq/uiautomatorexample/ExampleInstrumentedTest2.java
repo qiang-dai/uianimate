@@ -3,6 +3,7 @@ package com.hqq.uiautomatorexample;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
@@ -81,6 +82,10 @@ public class ExampleInstrumentedTest2 {
         source = imread(path);
         templete = imread(chessPath);
 
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        Bitmap bitmap = BitmapFactory.decodeFile(path, options);
+        ToolBitmap.searchCenter(bitmap);
 
         //定位物体中心
         //点击
