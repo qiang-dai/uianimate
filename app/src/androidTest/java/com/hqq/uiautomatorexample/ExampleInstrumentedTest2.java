@@ -68,7 +68,7 @@ public class ExampleInstrumentedTest2 {
         //File folder = new File(getTargetContext().getExternalCacheDir().getAbsolutePath() + "/screenshots/");
 
         String shortName = "uianim.png";
-        //ToolBitmap.getScreenshot(ToolShell.getPath("/screenshots/") + shortName);
+        ToolBitmap.getScreenshot(ToolShell.getPath("/screenshots/") + shortName);
         ToolBitmap.detectedChessTest(ToolShell.getPath("/screenshots/") + shortName);
         //定位当前位置
 
@@ -76,5 +76,29 @@ public class ExampleInstrumentedTest2 {
         //点击
         ToolAction.clickByClass("android.widget.ImageView", 70);
     }
+    @Before
+    public void testBeafo() {
+        boolean ret = OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_3_0, getTargetContext(), mLoaderCallback);
+        logger.info("ret:" + ret);
 
+        String APP_PACKAGE = "com.hqq.uiautomatorexample";
+        mDevice.wait(Until.hasObject(By.pkg(APP_PACKAGE).depth(0)), 1000);
+        mContext = InstrumentationRegistry.getTargetContext();
+    }
+    private static final String TAG = "OCVSample::Activity";
+    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(getTargetContext()) {
+        @Override
+        public void onManagerConnected(int status) {
+            switch (status) {
+                case LoaderCallbackInterface.SUCCESS: {
+                    Log.i(TAG, "OpenCV loaded successfully");
+                }
+                break;
+                default: {
+                    super.onManagerConnected(status);
+                }
+                break;
+            }
+        }
+    };
 }

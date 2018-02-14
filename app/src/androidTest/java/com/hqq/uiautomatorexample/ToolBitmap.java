@@ -3,8 +3,10 @@ package com.hqq.uiautomatorexample;
 import android.graphics.Bitmap;
 import android.os.Build;
 
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
@@ -83,25 +85,30 @@ public class ToolBitmap {
         String dir = ToolShell.getDir(path);
         String chessPath = dir + "chess.png";
 
-        logger.info("detectedChessTest path:" + path);
-        Mat source = imread(path);
-//        Mat source, templete;
-//        source = imread(path);
-//        templete = imread(chessPath);
-//
-//        Mat result = Mat.zeros(source.rows() - templete.rows() + 1,
-//                source.cols() - templete.cols() + 1, CvType.CV_32FC1);
-//        Imgproc.matchTemplate(source, templete, result, Imgproc.TM_SQDIFF_NORMED);
-//        Core.normalize(result, result, 0, 1, Core.NORM_MINMAX, -1);
-//        Core.MinMaxLocResult mlr = Core.minMaxLoc(result);
-//        org.opencv.core.Point matchLoc = mlr.minLoc;
-//
-//        System.out.println(matchLoc.x + ":" + matchLoc.y);
-//        Imgproc.rectangle(source, matchLoc,
-//                new org.opencv.core.Point(matchLoc.x + templete.width(), matchLoc.y + templete.height()),
-//                new Scalar(0, 255, 0));
-//
-//        String resPath = dir + "result.png";
-//        imwrite(resPath, source);
+        logger.info("detectedChessTest path dir:" + path);
+        logger.info("detectedChessTest path chessPath:" + chessPath);
+        Mat source, templete;
+        source = imread(path);
+        templete = imread(chessPath);
+
+        logger.info("detectedChessTest:" + source.rows() + ", " + templete.rows());
+        logger.info("detectedChessTest:" + source.cols() + ", " + templete.cols());
+        logger.info("detectedChessTest:" + String.valueOf(source.rows() - templete.rows() + 1));
+        logger.info("detectedChessTest:" + String.valueOf(source.cols() - templete.cols() + 1));
+        Mat result = Mat.zeros(source.rows() - templete.rows() + 1,
+                source.cols() - templete.cols() + 1, CvType.CV_32FC1);
+        Imgproc.matchTemplate(source, templete, result, Imgproc.TM_SQDIFF_NORMED);
+        Core.normalize(result, result, 0, 1, Core.NORM_MINMAX, -1);
+        Core.MinMaxLocResult mlr = Core.minMaxLoc(result);
+        org.opencv.core.Point matchLoc = mlr.minLoc;
+
+        //System.out.println(matchLoc.x + ":" + matchLoc.y);
+        logger.info("detectedChessTest matchLoc:" + matchLoc.x + ":" + matchLoc.y);
+        Imgproc.rectangle(source, matchLoc,
+                new org.opencv.core.Point(matchLoc.x + templete.width(), matchLoc.y + templete.height()),
+                new Scalar(0, 255, 0));
+
+        String resPath = dir + "result.png";
+        imwrite(resPath, source);
     }
 }

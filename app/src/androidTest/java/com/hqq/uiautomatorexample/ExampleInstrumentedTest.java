@@ -393,11 +393,11 @@ public class ExampleInstrumentedTest {
         String APP_PACKAGE = "com.hqq.uiautomatorexample";
 
         // Launch the app
-        Context context = InstrumentationRegistry.getContext();
-        final Intent intent = new Intent()
-                .setClassName(APP_PACKAGE, APP_PACKAGE + ".MainActivity")
-                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(intent);
+//        Context context = InstrumentationRegistry.getContext();
+//        final Intent intent = new Intent()
+//                .setClassName(APP_PACKAGE, APP_PACKAGE + ".MainActivity")
+//                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+//        context.startActivity(intent);
 
         // Wait for the app to appear
         mDevice.wait(Until.hasObject(By.pkg(APP_PACKAGE).depth(0)), 1000);
