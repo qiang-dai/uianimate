@@ -131,7 +131,7 @@ public class ToolBitmap {
 
     public static void detectedWhiteDot(String path) {
         String dir = ToolShell.getDir(path);
-        String chessPath = dir + "white_dot.jpg";
+        String chessPath = dir + "white_dot.png";
 
         logger.info("detectedWhiteDot path dir:" + path);
         logger.info("detectedWhiteDot path chessPath:" + chessPath);
