@@ -69,28 +69,30 @@ public class ExampleInstrumentedTest2 {
         //File folder = new File(getTargetContext().getExternalCacheDir().getAbsolutePath() + "/screenshots/");
 
         String shortName = "uianim.png";
-        String path = ToolShell.getPath("/screenshots/") + shortName;
+        String path = ToolShell.getStoragePath("/screenshots/") + shortName;
+        //截屏
         ToolBitmap.getScreenshot(path);
-        ToolBitmap.detectedChessTest(path);
-        ToolBitmap.detectedWhiteDot(path);
+        //检测起点
+        Point end;
+        Point start = ToolBitmap.detectedChessTest(path);
+        //检测白点
+        end = ToolBitmap.detectedWhiteDot(path);
+        //检测opencv边缘中心
+        end = ToolBitmap.searchCenter(path, start);
+        //end = ToolBitmap.opencvCenter(path, start);
+        logger.info("opencvCenter final start:" + start);
+        logger.info("opencvCenter final end:" + end);
+        //根据150：90的比例，计算距离
+        Double diff_x = end.x - start.x;
+        Double diff_y = end.y - start.y;
+        Double diff = Math.sqrt(diff_x*diff_x + diff_y*diff_y);
         //定位当前位置
-        String dir = ToolShell.getDir(path);
-        String chessPath = dir + "chess.png";
-
-        logger.info("detectedChessTest path dir:" + path);
-        logger.info("detectedChessTest path chessPath:" + chessPath);
-        Mat source, templete;
-        source = imread(path);
-        templete = imread(chessPath);
-
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-        Bitmap bitmap = BitmapFactory.decodeFile(path, options);
-        ToolBitmap.searchCenter(bitmap);
-
-        //定位物体中心
+        //ToolBitmap.searchCenter(path);
         //点击
-        //ToolAction.clickByClass("android.widget.ImageView", 70);
+//        Double cm = diff /(1920/15.38);
+//        cm /= 20;
+//        Double val = 216.2*cm + 13.5;
+//        ToolAction.clickByClass("android.widget.ImageView", diff.intValue()/15);
     }
     @Before
     public void testBeafo() {

@@ -33,7 +33,7 @@ public class ToolShell {
         return output;
     }
 
-    public static String getDir(String fileName) {
+    public static String getFileDirectory(String fileName) {
         if (fileName.contains("/")) {
             String path = fileName.substring(0, fileName.lastIndexOf("/")) + "/";
             return path;
@@ -52,7 +52,7 @@ public class ToolShell {
         }
     }
 
-    public static String getPath(String part) {
+    public static String getStoragePath(String part) {
         File folder = new File(getTargetContext().getExternalCacheDir().getAbsolutePath() + "/" + part);
         return folder.getPath() + "/";
     }

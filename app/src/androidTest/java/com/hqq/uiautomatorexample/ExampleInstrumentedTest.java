@@ -280,8 +280,8 @@ public class ExampleInstrumentedTest {
             {
 //                folder.mkdirs();
             }
-            String dir = ToolShell.getPath("screenshots/");
-            logger.info("folder.getPath:" + dir);
+            String dir = ToolShell.getStoragePath("screenshots/");
+            logger.info("folder.getStoragePath:" + dir);
             storeBitmap(bitmap, dir + "/uianimx.png");
 
             Mat img = imread(dir + "/uianimx.png");// 读入图片，将其转换为Mat
