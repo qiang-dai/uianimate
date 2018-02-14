@@ -427,6 +427,9 @@ public class ExampleInstrumentedTest {
                         hulls.add(tmp);
                     }
                     logger.info("approxf1:" + approxf1.toString() + ", size:" + Imgproc.contourArea(approx));
+                    for (Integer i = 0;i < approxf1.toArray().length; i++) {
+                        logger.info("point:" + approxf1.toArray()[i]);
+                    }
                 }
             }
             imwrite(folder.getPath() + "/uianim7.png", img);
