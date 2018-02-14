@@ -125,6 +125,37 @@ public class ToolBitmap {
                 new org.opencv.core.Point(matchLoc.x + templete.width(), matchLoc.y + templete.height()),
                 new Scalar(0, 255, 0));
 
+        String resPath = dir + "result2.png";
+        imwrite(resPath, source);
+    }
+
+    public static void detectedWhiteDot(String path) {
+        String dir = ToolShell.getDir(path);
+        String chessPath = dir + "white_dot.jpg";
+
+        logger.info("detectedWhiteDot path dir:" + path);
+        logger.info("detectedWhiteDot path chessPath:" + chessPath);
+        Mat source, templete;
+        source = imread(path);
+        templete = imread(chessPath);
+
+        logger.info("detectedWhiteDot:" + source.rows() + ", " + templete.rows());
+        logger.info("detectedWhiteDot:" + source.cols() + ", " + templete.cols());
+        logger.info("detectedWhiteDot:" + String.valueOf(source.rows() - templete.rows() + 1));
+        logger.info("detectedWhiteDot:" + String.valueOf(source.cols() - templete.cols() + 1));
+        Mat result = Mat.zeros(source.rows() - templete.rows() + 1,
+                source.cols() - templete.cols() + 1, CvType.CV_32FC1);
+        Imgproc.matchTemplate(source, templete, result, Imgproc.TM_SQDIFF_NORMED);
+        Core.normalize(result, result, 0, 1, Core.NORM_MINMAX, -1);
+        Core.MinMaxLocResult mlr = Core.minMaxLoc(result);
+        org.opencv.core.Point matchLoc = mlr.minLoc;
+
+        //System.out.println(matchLoc.x + ":" + matchLoc.y);
+        logger.info("detectedWhiteDot matchLoc:" + matchLoc.x + ":" + matchLoc.y);
+        Imgproc.rectangle(source, matchLoc,
+                new org.opencv.core.Point(matchLoc.x + templete.width(), matchLoc.y + templete.height()),
+                new Scalar(0, 255, 0));
+
         String resPath = dir + "result.png";
         imwrite(resPath, source);
     }
@@ -155,8 +186,7 @@ public class ToolBitmap {
         mArrayColorLengh = mBitmapWidth * mBitmapHeight;
         mArrayColor = new int[mArrayColorLengh];
         int count = 0;
-        for (int i = 0; i < mBitmapHeight; i++) {
-
+        for (int i = mBitmapHeight - 300; i >= 0; i--) {
             //统计不同颜色点的个数
             Map<Integer, Integer> pixelCntMap = new HashMap<>();
             for (int j = 0; j < mBitmapWidth; j++) {
@@ -176,13 +206,17 @@ public class ToolBitmap {
                     cnt += 1;
                 }
                 pixelCntMap.put(color, cnt);
+                if (pixelCntMap.size() > 1) {
+                    //计算最大量颜色的比例
+                    Integer max = getMaxCnt(pixelCntMap);
+                    logger.info("["+ i + "]" + "getMaxCnt max:" + max + ", rate:" + max*100.0/mBitmapWidth + "%");
+
+                    break;
+                }
 
                 count++;
             }
-            //计算最大量颜色的比例
-            Integer max = getMaxCnt(pixelCntMap);
-            logger.info("["+ i + "]" + "getMaxCnt max:" + max + ", rate:" + max*100.0/mBitmapWidth + "%");
-
+            break;
         }
         startTime = System.currentTimeMillis();
     }

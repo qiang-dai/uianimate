@@ -72,6 +72,7 @@ public class ExampleInstrumentedTest2 {
         String path = ToolShell.getPath("/screenshots/") + shortName;
         ToolBitmap.getScreenshot(path);
         ToolBitmap.detectedChessTest(path);
+        ToolBitmap.detectedWhiteDot(path);
         //定位当前位置
         String dir = ToolShell.getDir(path);
         String chessPath = dir + "chess.png";
