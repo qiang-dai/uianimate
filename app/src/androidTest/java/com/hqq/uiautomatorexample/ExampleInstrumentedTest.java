@@ -274,15 +274,17 @@ public class ExampleInstrumentedTest {
         {
             bitmap = getInstrumentation().getUiAutomation().takeScreenshot();
 
-            File folder = new File(getTargetContext().getExternalCacheDir().getAbsolutePath() + "/screenshots/");
+            File folder = new File(getTargetContext().getExternalCacheDir().getAbsolutePath()
+                    + "/screenshots/");
             if (!folder.exists())
             {
 //                folder.mkdirs();
             }
+            String dir = ToolShell.getPath("screenshots/");
             logger.info("folder.getPath:" + folder.getPath());
-            storeBitmap(bitmap, folder.getPath() + "/uianimx.png");
+            storeBitmap(bitmap, dir + "/uianimx.png");
 
-            Mat img = imread(folder.getPath() + "/uianimx.png");// 读入图片，将其转换为Mat
+            Mat img = imread(dir + "/uianimx.png");// 读入图片，将其转换为Mat
             double scale = 0.5;
             Size dsize = new Size(img.width() * scale, img.height() * scale); // 设置新图片的大小
 //            Mat img2 = new Mat(dsize, CvType.CV_16S);// 创建一个新的Mat（opencv的矩阵数据类型）
