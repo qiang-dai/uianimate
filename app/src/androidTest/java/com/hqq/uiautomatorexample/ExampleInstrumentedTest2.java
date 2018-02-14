@@ -68,13 +68,23 @@ public class ExampleInstrumentedTest2 {
         //File folder = new File(getTargetContext().getExternalCacheDir().getAbsolutePath() + "/screenshots/");
 
         String shortName = "uianim.png";
-        ToolBitmap.getScreenshot(ToolShell.getPath("/screenshots/") + shortName);
-        ToolBitmap.detectedChessTest(ToolShell.getPath("/screenshots/") + shortName);
+        String path = ToolShell.getPath("/screenshots/") + shortName;
+        ToolBitmap.getScreenshot(path);
+        ToolBitmap.detectedChessTest(path);
         //定位当前位置
+        String dir = ToolShell.getDir(path);
+        String chessPath = dir + "chess.png";
+
+        logger.info("detectedChessTest path dir:" + path);
+        logger.info("detectedChessTest path chessPath:" + chessPath);
+        Mat source, templete;
+        source = imread(path);
+        templete = imread(chessPath);
+
 
         //定位物体中心
         //点击
-        ToolAction.clickByClass("android.widget.ImageView", 70);
+        //ToolAction.clickByClass("android.widget.ImageView", 70);
     }
     @Before
     public void testBeafo() {
