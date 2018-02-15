@@ -117,7 +117,7 @@ public class ExampleInstrumentedTest2 {
             duration = 200;
         }
 
-        ToolAction.clickByClass("android.widget.ImageView", diff.intValue()/15);
+//        ToolAction.clickByClass("android.widget.ImageView", diff.intValue()/15);
     }
     @Before
     public void testBeafo() {

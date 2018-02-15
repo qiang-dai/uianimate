@@ -198,6 +198,22 @@ public class ToolBitmap {
         }
         return min;
     }
+    public static Integer getMaxMinColor(Map<Integer, Integer> cntMap) {
+        Integer maxVal = getMaxCnt(cntMap);
+        Integer maxMin = 0;
+        Integer color = -1;
+        for (Integer k : cntMap.keySet()) {
+            Integer v = cntMap.get(k);
+            if (v == maxVal) {
+                continue;
+            }
+            if (maxMin < v) {
+                maxMin = v;
+                color = k;
+            }
+        }
+        return color;
+    }
     public static Integer getMaxCnt(Map<Integer, Integer> cntMap) {
         Integer max = 0;
         for (Integer k : cntMap.keySet()) {
@@ -727,47 +743,62 @@ public class ToolBitmap {
                     cnt += 1;
                 }
                 pixelCntMap.put(color, cnt);
+
                 if (pixelCntMap.size() > 1) {
-                    //计算最大量颜色的比例
-                    Integer max = getMaxCnt(pixelCntMap);
-                    logger.info("["+ i + "]" + "getMaxCnt max:" + max + ", rate:" + max*100.0/mBitmapWidth + "%");
-
-                    Integer min = j-max;//getMinCnt(pixelCntMap);
-                    if (min < 20) {
-                        continue;
-                    }
-                    Point top = new Point(j-10, i-5);
-                    point = top;
-                    String dir = ToolShell.getFileDirectory(path);
-
-                    Mat source;
-                    source = imread(path);
-                    Imgproc.rectangle(source, top,
-                            new org.opencv.core.Point(top.x + 50, top.y + 50),
-                            new Scalar(255, 0, 0));
-
-//                    top.x = 50;
-//                    top.y = 80;
-//                    Imgproc.rectangle(source, top,
-//                            new org.opencv.core.Point(top.x + 50, top.y + 50),
-//                            new Scalar(0, 255, 0));
-//
-//                    top.x = 150;
-//                    top.y = 180;
-//                    Imgproc.rectangle(source, top,
-//                            new org.opencv.core.Point(top.x + 50, top.y + 50),
-//                            new Scalar(0, 0, 255));
-//
-                    String resPath = dir + String.format("result4.png", i);
-
-                    logger.info("opencvCenter resPath:" + resPath);
-                    imwrite(resPath, source);
-                    //定点 point
-                    //计算中心
-                    return top;
+                    Integer x = 0;
+                    logger.info("i,j:" + i + ", " + j);
                 }
 
                 count++;
+            }
+
+            if (pixelCntMap.size() > 1) {
+                //计算最大量颜色的比例
+                Integer max = getMaxCnt(pixelCntMap);
+                logger.info("["+ i + "]" + "getMaxCnt max:" + max + ", rate:" + max*100.0/mBitmapWidth + "%");
+
+                Integer min = mBitmapWidth-max;//getMinCnt(pixelCntMap);
+                if (min < 20) {
+                    continue;
+                }
+                //重新查找该行的点，然后取中间值
+                List<Integer> posList = new ArrayList<>();
+
+                for (Integer j = 0; j < mBitmapWidth; j++) {
+                    Integer currentColor = mBitmap.getPixel(j, i);
+                    if (currentColor != -10348) {
+                        posList.add(j);
+                    }
+                }
+                //查找最长子序列
+                Integer posSum = 0;
+                Integer posCnt = 0;
+                for (Integer j = 0; j < posList.size(); j++) {
+                    Integer nextJ = j + 1;
+                    if (nextJ >= posList.size()) {
+                        break;
+                    }
+
+                    if (posList.get(nextJ) == posList.get(j) + 1) {
+                        posSum += posList.get(j);
+                        posCnt += 1;
+                    }
+                }
+
+                //取中点位置
+                Point top = new Point(posSum/posCnt, i);
+                String dir = ToolShell.getFileDirectory(path);
+
+                Mat source;
+                source = imread(path);
+                Imgproc.rectangle(source, top,
+                        new org.opencv.core.Point(top.x + 50, top.y + 50),
+                        new Scalar(255, 0, 0));
+
+                String resPath = dir + String.format("result4.png", i);
+                logger.info("opencvCenter resPath:" + resPath);
+                imwrite(resPath, source);
+                return top;
             }
         }
         startTime = System.currentTimeMillis();
