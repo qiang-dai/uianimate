@@ -77,15 +77,15 @@ public class ExampleInstrumentedTest2 {
         //检测opencv边缘中心
         Point top = ToolBitmap.searchTop(path, start);
         //检测白点
-        Point whiteDot = ToolBitmap.detectedWhiteDot(path);
+        //Point whiteDot = ToolBitmap.detectedWhiteDot(path);
         Point end = new Point(100, 200);
         Point right = ToolBitmap.expandPixel(path, start, top);
-        //根据白点修复位置
-        if (Math.abs(whiteDot.x - top.x) < 10
-                && Math.abs(whiteDot.y - right.y) < 50) {
-            right.x = whiteDot.x;
-            right.y = whiteDot.y;
-        }
+//        //根据白点修复位置
+//        if (Math.abs(whiteDot.x - top.x) < 10
+//                && Math.abs(whiteDot.y - right.y) < 50) {
+//            right.x = whiteDot.x;
+//            right.y = whiteDot.y;
+//        }
         //最终位置
         Point dest = new Point(top.x, right.y);
 
@@ -99,17 +99,25 @@ public class ExampleInstrumentedTest2 {
         Imgproc.rectangle(source, dest,
                 new org.opencv.core.Point(dest.x + 50, dest.y + 50),
                 new Scalar(0, 0, 255));
+        Imgproc.rectangle(source, start,
+                new org.opencv.core.Point(start.x + 50, start.y + 50),
+                new Scalar(0, 255, 255));
 
         String dir = ToolShell.getFileDirectory(path);
         String resPath = dir + "result7.png";
         logger.info("opencvCenter resPath:" + resPath);
         imwrite(resPath, source);
 
-//        //根据150：90的比例，计算距离
-//        Double diff_x = dest.x - start.x;
-//        Double diff_y = dest.y - start.y;
-//        Double diff = Math.sqrt(diff_x*diff_x + diff_y*diff_y);
-//        ToolAction.clickByClass("android.widget.ImageView", diff.intValue()/15);
+        Double diff_x = dest.x - start.x;
+        Double diff_y = dest.y - start.y;
+        //计算距离
+        Double diff = Math.sqrt(diff_x*diff_x + diff_y*diff_y)*1.192;
+        Integer duration = diff.intValue();
+        if (duration < 200) {
+            duration = 200;
+        }
+
+        ToolAction.clickByClass("android.widget.ImageView", diff.intValue()/15);
     }
     @Before
     public void testBeafo() {
