@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Build;
 
+import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -236,6 +237,148 @@ public class ToolBitmap {
         double dy2 = pt2.y - pt0.y;
         return (dx1*dx2 + dy1*dy2)/Math.sqrt((dx1*dx1 + dy1*dy1)*(dx2*dx2 + dy2*dy2) + 1e-10);
     }
+
+    private static Boolean isWhite(Integer color) {
+        int r = Color.red(color);
+        int g = Color.green(color);
+        int b = Color.blue(color);
+        //if (r == 255 && g == 255 && b == 255) {
+        if (r > 250 && g > 250 && b > 250) {
+            return true;
+        }
+        return false;
+    }
+
+    private static Point getRightWhite(Bitmap bitmap, Point top) {
+        Point point = new Point(top.x, top.y);
+
+        Integer downCnt = 0;
+        for (Integer i = 0; i < 500; i++) {
+            //右，右下，下
+            Integer posx = Double.valueOf(point.x).intValue();
+            Integer posy = Double.valueOf(point.y).intValue();
+            Integer color0 = bitmap.getPixel(posx, posy);
+            Integer color1 = bitmap.getPixel(posx+1, posy);
+            Integer color2 = bitmap.getPixel(posx+1, posy+1);
+            Integer color3 = bitmap.getPixel(posx, posy+1);
+
+            if (isWhite(color2)) {
+                point.x += 1;
+                point.y += 1;
+
+                downCnt = 0;
+            } else if (isWhite(color1)) {
+                point.x += 1;
+
+                downCnt = 0;
+            } else if (isWhite(color3)){
+                point.y += 1;
+
+                downCnt += 1;
+            } else {
+                break;
+            }
+            if (downCnt >= 3) {
+                break;
+            }
+        }
+        return point;
+    }
+
+    private static void showAllColor(Bitmap bitmap) {
+        for (Integer j = 0; j < bitmap.getHeight();j+=100) {
+            for (Integer i = 0; i < bitmap.getWidth(); i+=1) {
+                Integer color = bitmap.getPixel(i, i);
+                int r = Color.red(color);
+                int g = Color.green(color);
+                int b = Color.blue(color);
+                logger.info("showAllColor getWhiteDot["+i+","+j+"]:" + color);
+                logger.info("r,g,b:" + r + "," + g + "," + b);
+            }
+        }
+    }
+    private static Point getWhiteDot(Bitmap bitmap, Point top) {
+        Integer posx = Double.valueOf(top.x).intValue();
+        Integer posy = Double.valueOf(top.y).intValue();
+
+//        for(Integer i = -30; i < 30; i++) {
+//            Integer color = bitmap.getPixel(posx+i, posy+i);
+//            logger.info("getWhiteDot["+posx+","+posy+"]:" + color);
+//            int r = Color.red(color);
+//            int g = Color.green(color);
+//            int b = Color.blue(color);
+//            logger.info("r,g,b:" + r + "," + g + "," + b);
+//        }
+
+        //向右
+        for (Integer i = 0; i< 80; i++) {
+            Integer color = bitmap.getPixel(posx, posy);
+            logger.info("["+posx+","+posy+"]:" + color);
+            int r = Color.red(color);
+            int g = Color.green(color);
+            int b = Color.blue(color);
+            logger.info("r,g,b:" + r + "," + g + "," + b);
+
+            if (r == 255 && g == 255 && b == 255) {
+                Point point = new Point(posx, posy);
+                return point;
+            }
+            posx+=1;
+        }
+
+        //向右下方
+        posx = Double.valueOf(top.x).intValue();
+        posy = Double.valueOf(top.y).intValue();
+        for (Integer i = 0; i< 80; i++) {
+            Integer color = bitmap.getPixel(posx, posy);
+            logger.info("["+posx+","+posy+"]:" + color);
+            int r = Color.red(color);
+            int g = Color.green(color);
+            int b = Color.blue(color);
+            logger.info("r,g,b:" + r + "," + g + "," + b);
+
+            if (r == 255 && g == 255 && b == 255) {
+                Point point = new Point(posx, posy);
+                return point;
+            }
+            posx+=1;
+            posy+=1;
+        }
+        //向下方
+        posx = Double.valueOf(top.x).intValue();
+        posy = Double.valueOf(top.y).intValue();
+        for (Integer i = 0; i< 80; i++) {
+            Integer color = bitmap.getPixel(posx, posy);
+            logger.info("["+posx+","+posy+"]:" + color);
+            int r = Color.red(color);
+            int g = Color.green(color);
+            int b = Color.blue(color);
+            logger.info("r,g,b:" + r + "," + g + "," + b);
+
+            if (r == 255 && g == 255 && b == 255) {
+                Point point = new Point(posx, posy);
+                return point;
+            }
+            posy+=1;
+        }
+
+        //向上
+        for (Integer i = 0; i< 80; i++) {
+            Integer color = bitmap.getPixel(posx, posy);
+            logger.info("["+posx+","+posy+"]:" + color);
+            int r = Color.red(color);
+            int g = Color.green(color);
+            int b = Color.blue(color);
+            logger.info("r,g,b:" + r + "," + g + "," + b);
+
+            if (r == 255 && g == 255 && b == 255) {
+                Point point = new Point(posx, posy);
+                return point;
+            }
+            posy -=1;
+        }
+        return top;
+    }
     public static Point opencvCenter(String path, Point start, Point top) {
         Point end = new Point(100, 300);
 
@@ -267,6 +410,33 @@ public class ToolBitmap {
         MatOfInt hull = new MatOfInt();
         MatOfPoint2f approx = new MatOfPoint2f();
         approx.convertTo(approx, CvType.CV_32F);
+
+        //从顶点开始遍历，查找左边缘
+        Bitmap bitmap = Bitmap.createBitmap(img.cols(), img.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(img, bitmap);
+
+        Point pointTop = getWhiteDot(bitmap, top);
+        Point pointRight=getRightWhite(bitmap, pointTop);
+
+        Imgproc.rectangle(img, pointTop,
+                new org.opencv.core.Point(pointTop.x + 50, pointTop.y + 50),
+                new Scalar(0, 0, 0));
+        Imgproc.rectangle(img, pointRight,
+                new org.opencv.core.Point(pointRight.x + 50, pointRight.y + 50),
+                new Scalar(255, 255, 255));
+
+        String resPath = dir + "result6.png";
+        logger.info("opencvCenter resPath:" + resPath);
+        imwrite(resPath, img);
+        //showAllColor(bitmap);
+//        Integer posx = Double.valueOf(top.x).intValue();
+//        Integer posy = Double.valueOf(top.y).intValue();
+//        for (Integer i = -30; i < 30; i++) {
+//            double colors[] = img.get(posx, posy);
+//            logger.info("colors:" + colors[0]);
+//            posx += i;
+//            posy += i;
+//        }
 
 
 
@@ -346,7 +516,7 @@ public class ToolBitmap {
             Imgproc.rectangle(source2, point,
                     new org.opencv.core.Point(point.x + 50, point.y + 50),
                     new Scalar(0, 0, 255));
-            String resPath = dir + "result5.png";
+            resPath = dir + "result5.png";
             logger.info("opencvCenter resPath:" + resPath);
             imwrite(resPath, source2);
         }
@@ -400,7 +570,7 @@ public class ToolBitmap {
 
         }
         //选最上层的option
-        String resPath = dir + "result3.png";
+        resPath = dir + "result3.png";
         logger.info("optionCenterMap size:" + optionCenterMap.size());
         logger.info("opencvCenter resPath:" + resPath);
         imwrite(resPath, source);
@@ -537,22 +707,11 @@ public class ToolBitmap {
 //
                     String resPath = dir + String.format("result4.png", i);
 
-                    //定点 point
-                    //计算中心
-                    Double diff_x = point.x - start.x;
-                    if (diff_x < 0) {
-                        diff_x = -diff_x;
-                    }
-                    Double diff_y = diff_x*3/5;
-                    point.y = start.y - diff_y;
-                    Imgproc.rectangle(source, point,
-                            new org.opencv.core.Point(point.x + 50, point.y + 50),
-                            new Scalar(0, 0, 0));
-
                     logger.info("opencvCenter resPath:" + resPath);
                     imwrite(resPath, source);
-
-                    return point;
+                    //定点 point
+                    //计算中心
+                    return top;
                 }
 
                 count++;
@@ -560,6 +719,22 @@ public class ToolBitmap {
         }
         startTime = System.currentTimeMillis();
         return point;
+    }
+    private static void getProperDistance(Point point, Point start) {
+//        Double diff_x = point.x - start.x;
+//        if (diff_x < 0) {
+//            diff_x = -diff_x;
+//        }
+//        Double diff_y = diff_x*3/5;
+//        point.y = start.y - diff_y;
+//        Imgproc.rectangle(source, point,
+//                new org.opencv.core.Point(point.x + 50, point.y + 50),
+//                new Scalar(0, 0, 0));
+//
+//        logger.info("opencvCenter resPath:" + resPath);
+//        imwrite(resPath, source);
+//
+//        return point;
     }
 
 //    public static Point searchMiddle(String path, Point start) {
