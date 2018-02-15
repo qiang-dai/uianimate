@@ -379,6 +379,59 @@ public class ToolBitmap {
         }
         return top;
     }
+    public static Point expandPixel(String path, Point start, Point top) {
+        Point end = new Point(100, 300);
+
+        String dir = ToolShell.getFileDirectory(path);
+
+        Mat img = imread(path);// 读入图片，将其转换为Mat
+        double scale = 0.5;
+        Size dsize = new Size(img.width() * scale, img.height() * scale); // 设置新图片的大小
+
+        //彩色转灰度
+        Imgproc.cvtColor(img, img, Imgproc.COLOR_BGR2GRAY);
+        imwrite(dir + "/uianim3.png", img);
+        // 高斯滤波，降噪
+        Imgproc.GaussianBlur(img, img, new Size(3, 3), 2, 2);
+        imwrite(dir + "/uianim4.png", img);
+        // Canny边缘检测
+        Imgproc.Canny(img, img, 3, 8, 3, false);
+        imwrite(dir + "/uianim5.png", img);
+        // 膨胀，连接边缘
+        Imgproc.dilate(img, img, new Mat(), new Point(-1, -1), 3, 1, new Scalar(1));
+        imwrite(dir + "/uianim6.png", img);
+        List<MatOfPoint> contours = new ArrayList<>();
+        Mat hierarchy = new Mat();
+        Imgproc.findContours(img, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+
+        // 找出轮廓对应凸包的四边形拟合
+        List<MatOfPoint> squares = new ArrayList<>();
+        List<MatOfPoint> hulls = new ArrayList<>();
+        MatOfInt hull = new MatOfInt();
+        MatOfPoint2f approx = new MatOfPoint2f();
+        approx.convertTo(approx, CvType.CV_32F);
+
+        //从顶点开始遍历，查找左边缘
+        Bitmap bitmap = Bitmap.createBitmap(img.cols(), img.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(img, bitmap);
+
+        Point pointTop = getWhiteDot(bitmap, top);
+        Point pointRight = getRightWhite(bitmap, pointTop);
+
+        Imgproc.rectangle(img, pointTop,
+                new org.opencv.core.Point(pointTop.x + 50, pointTop.y + 50),
+                new Scalar(0, 0, 0));
+        Imgproc.rectangle(img, pointRight,
+                new org.opencv.core.Point(pointRight.x + 50, pointRight.y + 50),
+                new Scalar(255, 255, 255));
+
+        String resPath = dir + "result6.png";
+        logger.info("opencvCenter resPath:" + resPath);
+        imwrite(resPath, img);
+
+        return pointRight;
+    }
+
     public static Point opencvCenter(String path, Point start, Point top) {
         Point end = new Point(100, 300);
 
@@ -425,7 +478,7 @@ public class ToolBitmap {
                 new org.opencv.core.Point(pointRight.x + 50, pointRight.y + 50),
                 new Scalar(255, 255, 255));
 
-        String resPath = dir + "result6.png";
+        String resPath = dir + "result7.png";
         logger.info("opencvCenter resPath:" + resPath);
         imwrite(resPath, img);
         //showAllColor(bitmap);

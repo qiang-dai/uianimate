@@ -79,29 +79,36 @@ public class ExampleInstrumentedTest2 {
         //检测白点
         Point whiteDot = ToolBitmap.detectedWhiteDot(path);
         Point end = new Point(100, 200);
-        if (Math.abs(whiteDot.x - top.x) < 10) {
-            //ok
-            logger.info("keep same x");
-            end = ToolBitmap.opencvCenter(path, start, top);
-        } else {
-            end = ToolBitmap.opencvCenter(path, start, top);
+        Point right = ToolBitmap.expandPixel(path, start, top);
+        //根据白点修复位置
+        if (Math.abs(whiteDot.x - top.x) < 10
+                && Math.abs(whiteDot.y - right.y) < 50) {
+            right.x = whiteDot.x;
+            right.y = whiteDot.y;
         }
+        //最终位置
+        Point dest = new Point(top.x, right.y);
 
-
-        //end = ToolBitmap.searchMiddle(path, start);
         logger.info("opencvCenter final start:" + start);
         logger.info("opencvCenter final top:" + top);
-        logger.info("opencvCenter final end:" + end);
-        //根据150：90的比例，计算距离
-        Double diff_x = end.x - start.x;
-        Double diff_y = end.y - start.y;
-        Double diff = Math.sqrt(diff_x*diff_x + diff_y*diff_y);
-        //定位当前位置
-        //ToolBitmap.searchTop(path);
-        //点击
-//        Double cm = diff /(1920/15.38);
-//        cm /= 20;
-//        Double val = 216.2*cm + 13.5;
+        logger.info("opencvCenter final right:" + right);
+        logger.info("opencvCenter final dest:" + dest);
+
+
+        Mat source = imread(path);
+        Imgproc.rectangle(source, dest,
+                new org.opencv.core.Point(dest.x + 50, dest.y + 50),
+                new Scalar(0, 0, 255));
+
+        String dir = ToolShell.getFileDirectory(path);
+        String resPath = dir + "result7.png";
+        logger.info("opencvCenter resPath:" + resPath);
+        imwrite(resPath, source);
+
+//        //根据150：90的比例，计算距离
+//        Double diff_x = dest.x - start.x;
+//        Double diff_y = dest.y - start.y;
+//        Double diff = Math.sqrt(diff_x*diff_x + diff_y*diff_y);
 //        ToolAction.clickByClass("android.widget.ImageView", diff.intValue()/15);
     }
     @Before
