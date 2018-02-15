@@ -65,6 +65,12 @@ public class ExampleInstrumentedTest2 {
 
     @Test
     public void testMainActivity() {
+        for (Integer i = 0; i < 100000;i++) {
+            testMainActivity2();
+            ToolShell.sleep(500);
+        }
+    }
+    public void testMainActivity2() {
         //截图
         //File folder = new File(getTargetContext().getExternalCacheDir().getAbsolutePath() + "/screenshots/");
 
@@ -111,13 +117,13 @@ public class ExampleInstrumentedTest2 {
         Double diff_x = dest.x - start.x;
         Double diff_y = dest.y - start.y;
         //计算距离
-        Double diff = Math.sqrt(diff_x*diff_x + diff_y*diff_y)*1.192;
+        Double diff = Math.sqrt(diff_x*diff_x + diff_y*diff_y)*1.3;
         Integer duration = diff.intValue();
         if (duration < 200) {
             duration = 200;
         }
 
-//        ToolAction.clickByClass("android.widget.ImageView", diff.intValue()/15);
+        ToolAction.clickByClass("android.widget.ImageView", diff.intValue()/15);
     }
     @Before
     public void testBeafo() {
