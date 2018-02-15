@@ -65,9 +65,9 @@ public class ExampleInstrumentedTest2 {
 
     @Test
     public void testMainActivity() {
-        for (Integer i = 0; i < 100000;i++) {
+        for (Integer i = 0; i < 10;i++) {
             testMainActivity2();
-            ToolShell.sleep(500);
+            ToolShell.sleep(1000);
         }
     }
     public void testMainActivity2() {
@@ -117,13 +117,14 @@ public class ExampleInstrumentedTest2 {
         Double diff_x = dest.x - start.x;
         Double diff_y = dest.y - start.y;
         //计算距离
-        Double diff = Math.sqrt(diff_x*diff_x + diff_y*diff_y)*1.3;
-        Integer duration = diff.intValue();
-        if (duration < 200) {
-            duration = 200;
-        }
+        Double diff = Math.sqrt(diff_x*diff_x + diff_y*diff_y);
+        Double diff2 = diff/10;
+        Integer duration = diff2.intValue();
 
-        ToolAction.clickByClass("android.widget.ImageView", diff.intValue()/15);
+        ToolAction.clickByClass("android.widget.ImageView", duration);
+        logger.info("duration check, start:" + start);
+        logger.info("duration check, diff:" + diff);
+        logger.info("duration check, duration:" + duration);
     }
     @Before
     public void testBeafo() {
