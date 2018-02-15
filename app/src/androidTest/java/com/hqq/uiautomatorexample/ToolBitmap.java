@@ -393,4 +393,73 @@ public class ToolBitmap {
         return point;
     }
 
+    public static Point searchMiddle(String path, Point start) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        Bitmap mBitmap = BitmapFactory.decodeFile(path, options);
+
+        int mBitmapWidth = 0;
+        int mBitmapHeight = 0;
+
+        Point point = new Point(1920, 1080);
+
+        mBitmapWidth = mBitmap.getWidth();
+        mBitmapHeight = mBitmap.getHeight();
+
+        Double last_rate = 100.0;
+        for (int i = 300; i < start.y; i++) {
+            //统计不同颜色点的个数
+            Map<Integer, Integer> pixelCntMap = new HashMap<>();
+            for (int j = 0; j < mBitmapWidth; j++) {
+                //获得Bitmap 图片中每一个点的color颜色值
+                int color = mBitmap.getPixel(j, i);
+
+                Integer cnt = pixelCntMap.get(color);
+                if (cnt == null) {
+                    cnt = 1;
+                } else {
+                    cnt += 1;
+                }
+                if (color == -7565675) {
+                    color = -3552042;
+                }
+                pixelCntMap.put(color, cnt);
+            }
+
+            Integer min = getMinCnt(pixelCntMap);
+            if (pixelCntMap.size() > 1 && min > 20) {
+                //计算最大量颜色的比例
+                Integer max = getMaxCnt(pixelCntMap);
+                logger.info("["+ i + "]" + "searchMiddle getMaxCnt max:" + max + ", rate:" + max*100.0/mBitmapWidth + "%");
+                Double cur_rate = max*100.0/mBitmapWidth;
+                if (cur_rate >= last_rate) {
+                //if (i == 950) {
+                    Point top = new Point(540, i);
+                    point = top;
+                    String dir = ToolShell.getFileDirectory(path);
+
+                    Mat source;
+                    source = imread(path);
+                    Imgproc.rectangle(source, top,
+                            new org.opencv.core.Point(top.x + 50, top.y + 50),
+                            new Scalar(0, 255, 0));
+
+//                    top.y = 950;
+//                    Imgproc.rectangle(source, top,
+//                            new org.opencv.core.Point(top.x + 50, top.y + 50),
+//                            new Scalar(255, 0, 255));
+
+                    String resPath = dir + String.format("result5.png", i);
+                    //logger.info("opencvCenter resPath:" + resPath);
+                    imwrite(resPath, source);
+
+                    return point;
+                } else {
+                    last_rate = cur_rate;
+                }
+            }
+        }
+        return point;
+    }
+
 }

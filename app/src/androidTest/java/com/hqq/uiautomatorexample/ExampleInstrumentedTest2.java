@@ -79,6 +79,7 @@ public class ExampleInstrumentedTest2 {
         end = ToolBitmap.detectedWhiteDot(path);
         //检测opencv边缘中心
         end = ToolBitmap.searchTop(path, start);
+        end = ToolBitmap.searchMiddle(path, start);
         //end = ToolBitmap.opencvCenter(path, start);
         logger.info("opencvCenter final start:" + start);
         logger.info("opencvCenter final end:" + end);
