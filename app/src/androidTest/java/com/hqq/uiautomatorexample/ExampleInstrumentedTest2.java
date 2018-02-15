@@ -73,15 +73,24 @@ public class ExampleInstrumentedTest2 {
         //截屏
         ToolBitmap.getScreenshot(path);
         //检测起点
-        Point end;
         Point start = ToolBitmap.detectedChessTest(path);
-        //检测白点
-        end = ToolBitmap.detectedWhiteDot(path);
         //检测opencv边缘中心
-        end = ToolBitmap.searchTop(path, start);
-        end = ToolBitmap.searchMiddle(path, start);
-        //end = ToolBitmap.opencvCenter(path, start);
+        Point top = ToolBitmap.searchTop(path, start);
+        //检测白点
+        Point whiteDot = ToolBitmap.detectedWhiteDot(path);
+        Point end = new Point(100, 200);
+        if (Math.abs(whiteDot.x - top.x) < 10) {
+            //ok
+            logger.info("keep same x");
+            end = ToolBitmap.opencvCenter(path, start, top);
+        } else {
+            end = ToolBitmap.opencvCenter(path, start, top);
+        }
+
+
+        //end = ToolBitmap.searchMiddle(path, start);
         logger.info("opencvCenter final start:" + start);
+        logger.info("opencvCenter final top:" + top);
         logger.info("opencvCenter final end:" + end);
         //根据150：90的比例，计算距离
         Double diff_x = end.x - start.x;
