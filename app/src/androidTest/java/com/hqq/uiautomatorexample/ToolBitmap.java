@@ -509,7 +509,7 @@ public class ToolBitmap {
                     Integer max = getMaxCnt(pixelCntMap);
                     logger.info("["+ i + "]" + "getMaxCnt max:" + max + ", rate:" + max*100.0/mBitmapWidth + "%");
 
-                    Integer min = getMinCnt(pixelCntMap);
+                    Integer min = j-max;//getMinCnt(pixelCntMap);
                     if (min < 20) {
                         continue;
                     }
