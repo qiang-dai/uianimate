@@ -67,7 +67,7 @@ public class ExampleInstrumentedTest2 {
     public void testMainActivity() {
         for (Integer i = 0; i < 10;i++) {
             testMainActivity2();
-            ToolShell.sleep(1000);
+            ToolShell.sleep(1500);
         }
     }
     public void testMainActivity2() {
@@ -118,8 +118,11 @@ public class ExampleInstrumentedTest2 {
         Double diff_y = dest.y - start.y;
         //计算距离
         Double diff = Math.sqrt(diff_x*diff_x + diff_y*diff_y);
-        Double diff2 = diff/10;
+        Double diff2 = diff/12;
         Integer duration = diff2.intValue();
+        if (duration < 20) {
+            duration = 20;
+        }
 
         ToolAction.clickByClass("android.widget.ImageView", duration);
         logger.info("duration check, start:" + start);

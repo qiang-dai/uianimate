@@ -225,6 +225,19 @@ public class ToolBitmap {
         return max;
     }
 
+    public static Integer getMaxColor(Map<Integer, Integer> cntMap) {
+        Integer max = 0;
+        Integer color = 0;
+        for (Integer k : cntMap.keySet()) {
+            Integer v = cntMap.get(k);
+            if (max < v ) {
+                max = v;
+                color = k;
+            }
+        }
+        return color;
+    }
+
     public static Integer getLeast(Map<Integer, Integer> cntMap, Integer max) {
         for (Integer k : cntMap.keySet()) {
             Integer v = cntMap.get(k);
@@ -393,6 +406,7 @@ public class ToolBitmap {
             }
             posy -=1;
         }
+        System.exit(0);
         return top;
     }
     public static Point expandPixel(String path, Point start, Point top) {
@@ -443,6 +457,8 @@ public class ToolBitmap {
 
         String resPath = dir + "result6.png";
         logger.info("opencvCenter resPath:" + resPath);
+        logger.info("pointTop:" + pointTop);
+        logger.info("pointRight:" + pointRight);
         imwrite(resPath, img);
 
         return pointRight;
@@ -764,12 +780,15 @@ public class ToolBitmap {
                 //重新查找该行的点，然后取中间值
                 List<Integer> posList = new ArrayList<>();
 
-                for (Integer j = 0; j < mBitmapWidth; j++) {
-                    Integer currentColor = mBitmap.getPixel(j, i);
-                    if (currentColor != -10348) {
-                        posList.add(j);
+                Integer maxColor = getMaxColor(pixelCntMap);
+                //for (Integer k = i; k < i+10; k++) {
+                    for (Integer j = 0; j < mBitmapWidth; j++) {
+                        Integer currentColor = mBitmap.getPixel(j, i);
+                        if (Integer.compare(currentColor, maxColor) != 0) {
+                            posList.add(j);
+                        }
                     }
-                }
+                //}
                 //查找最长子序列
                 Integer posSum = 0;
                 Integer posCnt = 0;
@@ -783,6 +802,11 @@ public class ToolBitmap {
                         posSum += posList.get(j);
                         posCnt += 1;
                     }
+                }
+
+                logger.info("posList:" + posList.toArray());
+                for (Integer k = 0; k < posList.size(); k++) {
+                    logger.info("["+k+"]:" + posList.get(k).toString());
                 }
 
                 //取中点位置
