@@ -253,136 +253,84 @@ public class ExampleInstrumentedTest {
     public void testMainActivity() {
         mDevice = UiDevice.getInstance(getInstrumentation());
         mContext = InstrumentationRegistry.getContext();
-//        scrollHorizonByClass("android.widget.RelativeLayout", 1);
-//        try {
-//            mDevice.wakeUp();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-
-//        if (shouldAskPermissions()) {
-//            askPermissions();
-//        }
-
-        //mDevice.pressHome();
-        //mDevice.openNotification();
-//        clickByDescription("Apps");
-//        scrollVerticalByInstanceToEnd();
 
         Bitmap bitmap;
-        //if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2)
-        {
-            bitmap = getInstrumentation().getUiAutomation().takeScreenshot();
+        bitmap = getInstrumentation().getUiAutomation().takeScreenshot();
 
-            File folder = new File(getTargetContext().getExternalCacheDir().getAbsolutePath()
-                    + "/screenshots/");
-            if (!folder.exists())
-            {
-//                folder.mkdirs();
+        String dir = ToolShell.getStoragePath("");
+        logger.info("folder.getStoragePath:" + dir);
+        storeBitmap(bitmap, dir + "/screenx.png");
+
+        Mat img = imread(dir + "/screenx.png");// 读入图片，将其转换为Mat
+        double scale = 0.5;
+        Size dsize = new Size(img.width() * scale, img.height() * scale); // 设置新图片的大小
+
+        //彩色转灰度
+        Imgproc.cvtColor(img, img, Imgproc.COLOR_BGR2GRAY);
+        imwrite(dir + "/screen3.png", img);
+        // 高斯滤波，降噪
+        Imgproc.GaussianBlur(img, img, new Size(3,3), 2, 2);
+        imwrite(dir + "/screen4.png", img);
+        // Canny边缘检测
+        Imgproc.Canny(img, img, 20, 60, 3, false);
+        imwrite(dir + "/screen5.png", img);
+        // 膨胀，连接边缘
+        Imgproc.dilate(img, img, new Mat(), new Point(-1,-1), 3, 1, new Scalar(1));
+        imwrite(dir + "/screen6.png", img);
+        List<MatOfPoint> contours = new ArrayList<>();
+        Mat hierarchy = new Mat();
+        Imgproc.findContours(img, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+
+        // 找出轮廓对应凸包的四边形拟合
+        List<MatOfPoint> squares = new ArrayList<>();
+        List<MatOfPoint> hulls = new ArrayList<>();
+        MatOfInt hull = new MatOfInt();
+        MatOfPoint2f approx = new MatOfPoint2f();
+        approx.convertTo(approx, CvType.CV_32F);
+
+        for (MatOfPoint contour: contours) {
+            logger.info("contour:" + contour.toString());
+
+            // 边框的凸包
+            Imgproc.convexHull(contour, hull);
+
+            // 用凸包计算出新的轮廓点
+            Point[] contourPoints = contour.toArray();
+            int[] indices = hull.toArray();
+            List<Point> newPoints = new ArrayList<>();
+            for (int index : indices) {
+                newPoints.add(contourPoints[index]);
             }
-            String dir = ToolShell.getStoragePath("screenshots/");
-            logger.info("folder.getStoragePath:" + dir);
-            storeBitmap(bitmap, dir + "/uianimx.png");
+            MatOfPoint2f contourHull = new MatOfPoint2f();
+            contourHull.fromList(newPoints);
 
-            Mat img = imread(dir + "/uianimx.png");// 读入图片，将其转换为Mat
-            double scale = 0.5;
-            Size dsize = new Size(img.width() * scale, img.height() * scale); // 设置新图片的大小
-//            Mat img2 = new Mat(dsize, CvType.CV_16S);// 创建一个新的Mat（opencv的矩阵数据类型）
-//            Imgproc.resize(img, img2,dsize);
-//            imwrite(dir + "/uianim2.png", img2);
+            // 多边形拟合凸包边框(此时的拟合的精度较低)
+            Imgproc.approxPolyDP(contourHull, approx, Imgproc.arcLength(contourHull, true)*0.02, true);
 
-            //彩色转灰度
-            Imgproc.cvtColor(img, img, Imgproc.COLOR_BGR2GRAY);
-            imwrite(dir + "/uianim3.png", img);
-            // 高斯滤波，降噪
-            Imgproc.GaussianBlur(img, img, new Size(3,3), 2, 2);
-            imwrite(dir + "/uianim4.png", img);
-            // Canny边缘检测
-            Imgproc.Canny(img, img, 20, 60, 3, false);
-            imwrite(dir + "/uianim5.png", img);
-            // 膨胀，连接边缘
-            Imgproc.dilate(img, img, new Mat(), new Point(-1,-1), 3, 1, new Scalar(1));
-            imwrite(dir + "/uianim6.png", img);
-            List<MatOfPoint> contours = new ArrayList<>();
-            Mat hierarchy = new Mat();
-            Imgproc.findContours(img, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
-
-            // 找出轮廓对应凸包的四边形拟合
-            List<MatOfPoint> squares = new ArrayList<>();
-            List<MatOfPoint> hulls = new ArrayList<>();
-            MatOfInt hull = new MatOfInt();
-            MatOfPoint2f approx = new MatOfPoint2f();
-            approx.convertTo(approx, CvType.CV_32F);
-
-            for (MatOfPoint contour: contours) {
-                logger.info("contour:" + contour.toString());
-
-                // 边框的凸包
-                Imgproc.convexHull(contour, hull);
-
-                // 用凸包计算出新的轮廓点
-                Point[] contourPoints = contour.toArray();
-                int[] indices = hull.toArray();
-                List<Point> newPoints = new ArrayList<>();
-                for (int index : indices) {
-                    newPoints.add(contourPoints[index]);
+            // 筛选出面积大于某一阈值的，且四边形的各个角度都接近直角的凸四边形
+            MatOfPoint approxf1 = new MatOfPoint();
+            approx.convertTo(approxf1, CvType.CV_32S);
+            if (approx.rows() == 4 && Math.abs(Imgproc.contourArea(approx)) > 400 &&
+                    Imgproc.isContourConvex(approxf1)) {
+                double maxCosine = 0;
+                for (int j = 2; j < 5; j++) {
+                    double cosine = Math.abs(getAngle(approxf1.toArray()[j%4], approxf1.toArray()[j-2], approxf1.toArray()[j-1]));
+                    maxCosine = Math.max(maxCosine, cosine);
                 }
-                MatOfPoint2f contourHull = new MatOfPoint2f();
-                contourHull.fromList(newPoints);
-
-                // 多边形拟合凸包边框(此时的拟合的精度较低)
-                Imgproc.approxPolyDP(contourHull, approx, Imgproc.arcLength(contourHull, true)*0.02, true);
-
-                // 筛选出面积大于某一阈值的，且四边形的各个角度都接近直角的凸四边形
-                MatOfPoint approxf1 = new MatOfPoint();
-                approx.convertTo(approxf1, CvType.CV_32S);
-                if (approx.rows() == 4 && Math.abs(Imgproc.contourArea(approx)) > 400 &&
-                        Imgproc.isContourConvex(approxf1)) {
-                    double maxCosine = 0;
-                    for (int j = 2; j < 5; j++) {
-                        double cosine = Math.abs(getAngle(approxf1.toArray()[j%4], approxf1.toArray()[j-2], approxf1.toArray()[j-1]));
-                        maxCosine = Math.max(maxCosine, cosine);
-                    }
-                    // 角度大概72度
-                    if (maxCosine < 0.3) {
-                        MatOfPoint tmp = new MatOfPoint();
-                        contourHull.convertTo(tmp, CvType.CV_32S);
-                        squares.add(approxf1);
-                        hulls.add(tmp);
-                    }
-                    logger.info("approxf1:" + approxf1.toString() + ", size:" + Imgproc.contourArea(approx));
-                    for (Integer i = 0;i < approxf1.toArray().length; i++) {
-                        logger.info("point:" + approxf1.toArray()[i]);
-                    }
+                // 角度大概72度
+                if (maxCosine < 0.3) {
+                    MatOfPoint tmp = new MatOfPoint();
+                    contourHull.convertTo(tmp, CvType.CV_32S);
+                    squares.add(approxf1);
+                    hulls.add(tmp);
+                }
+                logger.info("approxf1:" + approxf1.toString() + ", size:" + Imgproc.contourArea(approx));
+                for (Integer i = 0;i < approxf1.toArray().length; i++) {
+                    logger.info("point:" + approxf1.toArray()[i]);
                 }
             }
-            imwrite(dir + "/uianim7.png", img);
-
-            //ImageView imgview = (ImageView) findViewById(R.layout.activity_main3);
-            // 显示照片
-            //imgview.setImageBitmap(bitmap);
-
         }
-//        String fileName = Environment.getExternalStoragePublicDirectory(DIRECTORY_DOWNLOADS) + "/unanim3.png";
-//        fileName = getTargetContext().getFileStreamPath("uianim4.png").toString();
-//        String dir = Environment.getExternalStorageDirectory().getAbsolutePath() +  "/storage/data/test";
-//        File folder = new File(dir);
-//        if (!folder.exists())
-//        {
-//            folder.mkdirs();
-//        }
-//        File folder = getStoragePath();
-//        logger.info("fileName:" + folder);
-//        mDevice.takeScreenshot(new File("/storage/emulated/0/Android/data/com.hqq.uiautomatorexample/cache/screenshots/z.png"));
-
-//        TextView tv = new TextView(mContext);
-//        tv.findViewById(R.layout.activity_main3);
-        //mDevice.takeScreenshot(new File(folder + "/zz.png"));
-        //Intent myIntent = mContext.getPackageManager().getLaunchIntentForPackage(APP);  //启动app
-        //mContext.startActivity(myIntent);
-//        clickByText("Settings");
-//        getScrollObject();
-//        clickByText("Display");
+        imwrite(dir + "/screen7.png", img);
     }
     @Before
     public void testBeafo() {

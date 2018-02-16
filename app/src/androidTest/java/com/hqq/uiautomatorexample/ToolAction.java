@@ -40,8 +40,14 @@ class ToolAction {
         try {
             Point pot = new Point(object.getVisibleBounds().centerX(), object.getVisibleBounds().centerY());
             UiDevice mDevice = UiDevice.getInstance(getInstrumentation());
+            pot.x += 300;
+            pot.y += 300;
+            pot.x += Math.random()*10;
+            pot.y += Math.random()*10;
+
             Integer x = new Double(pot.x).intValue();
             Integer y = new Double(pot.y).intValue();
+
             mDevice.swipe(x, y, x, y, val);
         } catch (Exception e) {
             e.printStackTrace();

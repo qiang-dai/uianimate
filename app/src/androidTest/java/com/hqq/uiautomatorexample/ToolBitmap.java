@@ -113,7 +113,7 @@ public class ToolBitmap {
 
     public static Point detectedChessTest(String path) {
         String dir = ToolShell.getFileDirectory(path);
-        String chessPath = dir + "chess.png";
+        String chessPath = dir + "../chess.png";
 
         logger.info("detectedChessTest path dir:" + path);
         logger.info("detectedChessTest path chessPath:" + chessPath);
@@ -146,7 +146,7 @@ public class ToolBitmap {
                 new org.opencv.core.Point(matchLoc.x + 30, matchLoc.y + 30),
                 new Scalar(255, 0, 255));
 
-        String resPath = dir + "result.png";
+        String resPath = dir + "result0Chess.png";
         imwrite(resPath, source);
 
         return matchLoc;
@@ -154,7 +154,7 @@ public class ToolBitmap {
 
     public static Point detectedWhiteDot(String path) {
         String dir = ToolShell.getFileDirectory(path);
-        String chessPath = dir + "white_dot.png";
+        String chessPath = dir + "../white_dot.png";
 
         logger.info("detectedWhiteDot path dir:" + path);
         logger.info("detectedWhiteDot path chessPath:" + chessPath);
@@ -183,7 +183,7 @@ public class ToolBitmap {
                 new org.opencv.core.Point(matchLoc.x + templete.width(), matchLoc.y + templete.height()),
                 new Scalar(255, 0, 0));
 
-        String resPath = dir + "result2.png";
+        String resPath = dir + "result2WhiteDot.png";
         imwrite(resPath, source);
         return matchLoc;
     }
@@ -286,6 +286,11 @@ public class ToolBitmap {
             //右，右下，下
             Integer posx = Double.valueOf(point.x).intValue();
             Integer posy = Double.valueOf(point.y).intValue();
+
+            if (posx == bitmap.getWidth() - 1) {
+                break;
+            }
+
             Integer color0 = bitmap.getPixel(posx, posy);
             Integer color1 = bitmap.getPixel(posx+1, posy);
             Integer color2 = bitmap.getPixel(posx+1, posy+1);
@@ -420,16 +425,16 @@ public class ToolBitmap {
 
         //彩色转灰度
         Imgproc.cvtColor(img, img, Imgproc.COLOR_BGR2GRAY);
-        imwrite(dir + "/uianim3.png", img);
+        imwrite(dir + "/screen3.png", img);
         // 高斯滤波，降噪
         Imgproc.GaussianBlur(img, img, new Size(3, 3), 2, 2);
-        imwrite(dir + "/uianim4.png", img);
+        imwrite(dir + "/screen4.png", img);
         // Canny边缘检测
         Imgproc.Canny(img, img, 3, 8, 3, false);
-        imwrite(dir + "/uianim5.png", img);
+        imwrite(dir + "/screen5.png", img);
         // 膨胀，连接边缘
         Imgproc.dilate(img, img, new Mat(), new Point(-1, -1), 3, 1, new Scalar(1));
-        imwrite(dir + "/uianim6.png", img);
+        imwrite(dir + "/screen6.png", img);
         List<MatOfPoint> contours = new ArrayList<>();
         Mat hierarchy = new Mat();
         Imgproc.findContours(img, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
@@ -455,7 +460,7 @@ public class ToolBitmap {
                 new org.opencv.core.Point(pointRight.x + 50, pointRight.y + 50),
                 new Scalar(255, 255, 255));
 
-        String resPath = dir + "result6.png";
+        String resPath = dir + "result6TopRight.png";
         logger.info("opencvCenter resPath:" + resPath);
         logger.info("pointTop:" + pointTop);
         logger.info("pointRight:" + pointRight);
@@ -464,211 +469,75 @@ public class ToolBitmap {
         return pointRight;
     }
 
-    public static Point opencvCenter(String path, Point start, Point top) {
-        Point end = new Point(100, 300);
-
-        String dir = ToolShell.getFileDirectory(path);
-
-        Mat img = imread(path);// 读入图片，将其转换为Mat
-        double scale = 0.5;
-        Size dsize = new Size(img.width() * scale, img.height() * scale); // 设置新图片的大小
-
-        //彩色转灰度
-        Imgproc.cvtColor(img, img, Imgproc.COLOR_BGR2GRAY);
-        imwrite(dir + "/uianim3.png", img);
-        // 高斯滤波，降噪
-        Imgproc.GaussianBlur(img, img, new Size(3,3), 2, 2);
-        imwrite(dir + "/uianim4.png", img);
-        // Canny边缘检测
-        Imgproc.Canny(img, img, 3, 8, 3, false);
-        imwrite(dir + "/uianim5.png", img);
-        // 膨胀，连接边缘
-        Imgproc.dilate(img, img, new Mat(), new Point(-1,-1), 3, 1, new Scalar(1));
-        imwrite(dir + "/uianim6.png", img);
-        List<MatOfPoint> contours = new ArrayList<>();
-        Mat hierarchy = new Mat();
-        Imgproc.findContours(img, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
-
-        // 找出轮廓对应凸包的四边形拟合
-        List<MatOfPoint> squares = new ArrayList<>();
-        List<MatOfPoint> hulls = new ArrayList<>();
-        MatOfInt hull = new MatOfInt();
-        MatOfPoint2f approx = new MatOfPoint2f();
-        approx.convertTo(approx, CvType.CV_32F);
-
-        //从顶点开始遍历，查找左边缘
-        Bitmap bitmap = Bitmap.createBitmap(img.cols(), img.rows(), Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(img, bitmap);
-
-        Point pointTop = getWhiteDot(bitmap, top);
-        Point pointRight=getRightWhite(bitmap, pointTop);
-
-        Imgproc.rectangle(img, pointTop,
-                new org.opencv.core.Point(pointTop.x + 50, pointTop.y + 50),
-                new Scalar(0, 0, 0));
-        Imgproc.rectangle(img, pointRight,
-                new org.opencv.core.Point(pointRight.x + 50, pointRight.y + 50),
-                new Scalar(255, 255, 255));
-
-        String resPath = dir + "result7.png";
-        logger.info("opencvCenter resPath:" + resPath);
-        imwrite(resPath, img);
-        //showAllColor(bitmap);
-//        Integer posx = Double.valueOf(top.x).intValue();
-//        Integer posy = Double.valueOf(top.y).intValue();
-//        for (Integer i = -30; i < 30; i++) {
-//            double colors[] = img.get(posx, posy);
-//            logger.info("colors:" + colors[0]);
-//            posx += i;
-//            posy += i;
-//        }
-
-
-
-        //chess
-        String chessPath = dir + "chess.png";
-        Mat chess = imread(chessPath);
-        Double xxx = start.x + chess.width()/2;
-
-        List<Point> totalPoints = new ArrayList<>();
-        for (MatOfPoint contour: contours) {
-            logger.info("contour:" + contour.toString());
-            // 边框的凸包
-            Imgproc.convexHull(contour, hull);
-
-            // 用凸包计算出新的轮廓点
-            Point[] contourPoints = contour.toArray();
-            int[] indices = hull.toArray();
-            List<Point> newPoints = new ArrayList<>();
-            for (int index : indices) {
-                Point point = contourPoints[index];
-                if (point.y > 300
-                        && point.y < start.y + 300) {
-
-                    //必须在chess的旁边
-                    if (start.x <= 1080/2 && point.x <= start.x + chess.width()/2) {
-                        continue;
-                    }
-                    if (start.x >= 1080/2 && point.x >= start.x - chess.width()/2) {
-                        continue;
-                    }
-                    totalPoints.add(point);
-                }
-            }
-        }
-
-        //所有的点统一排序
-        logger.info("totalPoints size:" + totalPoints.size());
-        Collections.sort(totalPoints, new Comparator<Point>() {
-            @Override
-            public int compare(Point p1, Point p2) {
-                return Double.compare(p1.y, p2.y);
-            }
-        });
-        Collections.sort(totalPoints, new Comparator<Point>() {
-            @Override
-            public int compare(Point p1, Point p2) {
-                return Double.compare(p1.x, p2.x);
-            }
-        });
-        //遇到x相同的，去掉y大的点
-//        Map<Double, Point> tmpMap = new HashMap<>();
+//    public static Point opencvCenter(String path, Point start, Point top) {
+//        Point end = new Point(100, 300);
 //
-//        for (Integer i = 0; i < totalPoints.size() - 1; i++) {
-//            Point point = totalPoints.get(i);
-//            //判断是不是差不多的像素点，如果是就聚类
+//        String dir = ToolShell.getFileDirectory(path);
 //
-//            Double k = point.x;
-//            if (tmpMap.containsKey(k)) {
-//                Point tmp = tmpMap.get(k);
-//                if (point.y < tmp.y) {
-//                    tmpMap.put(k, point);
-//                }
-//            } else {
-//                tmpMap.put(k, point);
-//            }
-//        }
-//        //重新组织list
-//        totalPoints.clear();
-//        for (Double k : tmpMap.keySet()) {
-//            Point point = tmpMap.get(k);
-//            totalPoints.add(point);
+//        Mat img = imread(path);// 读入图片，将其转换为Mat
+//        double scale = 0.5;
+//        Size dsize = new Size(img.width() * scale, img.height() * scale); // 设置新图片的大小
 //
-//        }
-        Mat source2 = imread(path);
-        for (Point point : totalPoints) {
-            //ok
-            Imgproc.rectangle(source2, point,
-                    new org.opencv.core.Point(point.x + 50, point.y + 50),
-                    new Scalar(0, 0, 255));
-            resPath = dir + "result5.png";
-            logger.info("opencvCenter resPath:" + resPath);
-            imwrite(resPath, source2);
-        }
-        //从前往后匹配
-        Integer rightPos = totalPoints.size() - 1;
-        Integer leftPos = 0;
-
-        Mat source = imread(path);
-
-        Map<Point, Point> optionCenterMap = new HashMap<>();
-        for (Integer i = 0; i < 10000; i++) {
-            if (leftPos >= rightPos) {
-                logger.info("error for match left/right");
-                break;
-            }
-            Point left = totalPoints.get(leftPos);
-            Point right= totalPoints.get(rightPos);
-            Double x = (left.x + right.x)/2;
-            Double y = (left.y + right.y)/2;
-            Point center = new Point(x, y);
-            //判断cos值
-            Double cosine = getAngle(top, start, center);
-//            if ((Math.abs(center.x - top.x) < 50)
-//                    && (Math.abs(left.y - right.y) < 50)
-//                    && center.y < start.y
-//                    && center.y > top.y
-//                    && cosine < 0) {
-            if (Math.abs(center.x - top.x) < 30
-                    && Math.abs(left.y - right.y) < 30
-                    && center.y < start.y
-                    && center.y > top.y) {
-
-                //ok
-                Imgproc.rectangle(source, center,
-                        new org.opencv.core.Point(center.x + 50, center.y + 50),
-                        new Scalar(255, 255, 255));
-                Imgproc.rectangle(source, left,
-                        new org.opencv.core.Point(left.x + 50, left.y + 50),
-                        new Scalar(255, 0, 255));
-                Imgproc.rectangle(source, right,
-                        new org.opencv.core.Point(right.x + 50, right.y + 50),
-                        new Scalar(255, 255, 0));
-                //return center;
-                optionCenterMap.put(center, center);
-
-            } else if (center.x > top.x) {
-                rightPos --;
-            } else {
-                leftPos ++;
-            }
-
-        }
-        //选最上层的option
-        resPath = dir + "result3.png";
-        logger.info("optionCenterMap size:" + optionCenterMap.size());
-        logger.info("opencvCenter resPath:" + resPath);
-        imwrite(resPath, source);
-
-        return top;
-
-
-        //for (MatOfPoint contour: contours) {
-//        for (Integer i = 0; i < contours.size(); i++) {
-//            MatOfPoint contour = contours.get(i);
+//        //彩色转灰度
+//        Imgproc.cvtColor(img, img, Imgproc.COLOR_BGR2GRAY);
+//        imwrite(dir + "/screen3.png", img);
+//        // 高斯滤波，降噪
+//        Imgproc.GaussianBlur(img, img, new Size(3,3), 2, 2);
+//        imwrite(dir + "/screen4.png", img);
+//        // Canny边缘检测
+//        Imgproc.Canny(img, img, 3, 8, 3, false);
+//        imwrite(dir + "/screen5.png", img);
+//        // 膨胀，连接边缘
+//        Imgproc.dilate(img, img, new Mat(), new Point(-1,-1), 3, 1, new Scalar(1));
+//        imwrite(dir + "/screen6.png", img);
+//        List<MatOfPoint> contours = new ArrayList<>();
+//        Mat hierarchy = new Mat();
+//        Imgproc.findContours(img, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
 //
+//        // 找出轮廓对应凸包的四边形拟合
+//        List<MatOfPoint> squares = new ArrayList<>();
+//        List<MatOfPoint> hulls = new ArrayList<>();
+//        MatOfInt hull = new MatOfInt();
+//        MatOfPoint2f approx = new MatOfPoint2f();
+//        approx.convertTo(approx, CvType.CV_32F);
+//
+//        //从顶点开始遍历，查找左边缘
+//        Bitmap bitmap = Bitmap.createBitmap(img.cols(), img.rows(), Bitmap.Config.ARGB_8888);
+//        Utils.matToBitmap(img, bitmap);
+//
+//        Point pointTop = getWhiteDot(bitmap, top);
+//        Point pointRight=getRightWhite(bitmap, pointTop);
+//
+//        Imgproc.rectangle(img, pointTop,
+//                new org.opencv.core.Point(pointTop.x + 50, pointTop.y + 50),
+//                new Scalar(0, 0, 0));
+//        Imgproc.rectangle(img, pointRight,
+//                new org.opencv.core.Point(pointRight.x + 50, pointRight.y + 50),
+//                new Scalar(255, 255, 255));
+//
+//        String resPath = dir + "result7.png";
+//        logger.info("opencvCenter resPath:" + resPath);
+//        imwrite(resPath, img);
+//        //showAllColor(bitmap);
+////        Integer posx = Double.valueOf(top.x).intValue();
+////        Integer posy = Double.valueOf(top.y).intValue();
+////        for (Integer i = -30; i < 30; i++) {
+////            double colors[] = img.get(posx, posy);
+////            logger.info("colors:" + colors[0]);
+////            posx += i;
+////            posy += i;
+////        }
+//
+//
+//
+//        //chess
+//        String chessPath = dir + "chess.png";
+//        Mat chess = imread(chessPath);
+//        Double xxx = start.x + chess.width()/2;
+//
+//        List<Point> totalPoints = new ArrayList<>();
+//        for (MatOfPoint contour: contours) {
 //            logger.info("contour:" + contour.toString());
-//
 //            // 边框的凸包
 //            Imgproc.convexHull(contour, hull);
 //
@@ -677,47 +546,183 @@ public class ToolBitmap {
 //            int[] indices = hull.toArray();
 //            List<Point> newPoints = new ArrayList<>();
 //            for (int index : indices) {
-//                newPoints.add(contourPoints[index]);
-//            }
-//            MatOfPoint2f contourHull = new MatOfPoint2f();
-//            contourHull.fromList(newPoints);
+//                Point point = contourPoints[index];
+//                if (point.y > 300
+//                        && point.y < start.y + 300) {
 //
-//            // 多边形拟合凸包边框(此时的拟合的精度较低)
-//            Imgproc.approxPolyDP(contourHull, approx, Imgproc.arcLength(contourHull, true)*0.02, true);
-//
-//            // 筛选出面积大于某一阈值的，且四边形的各个角度都接近直角的凸四边形
-//            MatOfPoint approxf1 = new MatOfPoint();
-//            approx.convertTo(approxf1, CvType.CV_32S);
-//
-//            if (Math.abs(Imgproc.contourArea(approx)) > 40000 &&
-//                    Imgproc.isContourConvex(approxf1)) {
-//                //求最高点
-//                Point[] arr = approxf1.toArray();
-//                Point top = new Point(1920,1080);
-//                for(Point point : arr) {
-//                    if (point.y < top.y) {
-//                        top = point;
+//                    //必须在chess的旁边
+//                    if (start.x <= 1080/2 && point.x <= start.x + chess.width()/2) {
+//                        continue;
 //                    }
-//                }
-//                logger.info("opencvCenter top:" + top);
-//                Mat source;
-//                source = imread(path);
-//                Imgproc.rectangle(source, top,
-//                        new org.opencv.core.Point(top.x + 50, top.y + 50),
-//                        new Scalar(255, 0, 0));
-////
-//                String resPath = dir + String.format("result3_%d.png", i);
-//                logger.info("opencvCenter resPath:" + resPath);
-//                imwrite(resPath, source);
-//
-//                //取大于300的小的
-//                if (top.y > 300 && end.y > top.y) {
-//                    end = top;
+//                    if (start.x >= 1080/2 && point.x >= start.x - chess.width()/2) {
+//                        continue;
+//                    }
+//                    totalPoints.add(point);
 //                }
 //            }
 //        }
-//        imwrite(dir + "/uianim7.png", img);
-    }
+//
+//        //所有的点统一排序
+//        logger.info("totalPoints size:" + totalPoints.size());
+//        Collections.sort(totalPoints, new Comparator<Point>() {
+//            @Override
+//            public int compare(Point p1, Point p2) {
+//                return Double.compare(p1.y, p2.y);
+//            }
+//        });
+//        Collections.sort(totalPoints, new Comparator<Point>() {
+//            @Override
+//            public int compare(Point p1, Point p2) {
+//                return Double.compare(p1.x, p2.x);
+//            }
+//        });
+//        //遇到x相同的，去掉y大的点
+////        Map<Double, Point> tmpMap = new HashMap<>();
+////
+////        for (Integer i = 0; i < totalPoints.size() - 1; i++) {
+////            Point point = totalPoints.get(i);
+////            //判断是不是差不多的像素点，如果是就聚类
+////
+////            Double k = point.x;
+////            if (tmpMap.containsKey(k)) {
+////                Point tmp = tmpMap.get(k);
+////                if (point.y < tmp.y) {
+////                    tmpMap.put(k, point);
+////                }
+////            } else {
+////                tmpMap.put(k, point);
+////            }
+////        }
+////        //重新组织list
+////        totalPoints.clear();
+////        for (Double k : tmpMap.keySet()) {
+////            Point point = tmpMap.get(k);
+////            totalPoints.add(point);
+////
+////        }
+//        Mat source2 = imread(path);
+//        for (Point point : totalPoints) {
+//            //ok
+//            Imgproc.rectangle(source2, point,
+//                    new org.opencv.core.Point(point.x + 50, point.y + 50),
+//                    new Scalar(0, 0, 255));
+//            resPath = dir + "result5.png";
+//            logger.info("opencvCenter resPath:" + resPath);
+//            imwrite(resPath, source2);
+//        }
+//        //从前往后匹配
+//        Integer rightPos = totalPoints.size() - 1;
+//        Integer leftPos = 0;
+//
+//        Mat source = imread(path);
+//
+//        Map<Point, Point> optionCenterMap = new HashMap<>();
+//        for (Integer i = 0; i < 10000; i++) {
+//            if (leftPos >= rightPos) {
+//                logger.info("error for match left/right");
+//                break;
+//            }
+//            Point left = totalPoints.get(leftPos);
+//            Point right= totalPoints.get(rightPos);
+//            Double x = (left.x + right.x)/2;
+//            Double y = (left.y + right.y)/2;
+//            Point center = new Point(x, y);
+//            //判断cos值
+//            Double cosine = getAngle(top, start, center);
+////            if ((Math.abs(center.x - top.x) < 50)
+////                    && (Math.abs(left.y - right.y) < 50)
+////                    && center.y < start.y
+////                    && center.y > top.y
+////                    && cosine < 0) {
+//            if (Math.abs(center.x - top.x) < 30
+//                    && Math.abs(left.y - right.y) < 30
+//                    && center.y < start.y
+//                    && center.y > top.y) {
+//
+//                //ok
+//                Imgproc.rectangle(source, center,
+//                        new org.opencv.core.Point(center.x + 50, center.y + 50),
+//                        new Scalar(255, 255, 255));
+//                Imgproc.rectangle(source, left,
+//                        new org.opencv.core.Point(left.x + 50, left.y + 50),
+//                        new Scalar(255, 0, 255));
+//                Imgproc.rectangle(source, right,
+//                        new org.opencv.core.Point(right.x + 50, right.y + 50),
+//                        new Scalar(255, 255, 0));
+//                //return center;
+//                optionCenterMap.put(center, center);
+//
+//            } else if (center.x > top.x) {
+//                rightPos --;
+//            } else {
+//                leftPos ++;
+//            }
+//
+//        }
+//        //选最上层的option
+//        resPath = dir + "result3Center.png";
+//        logger.info("optionCenterMap size:" + optionCenterMap.size());
+//        logger.info("opencvCenter resPath:" + resPath);
+//        imwrite(resPath, source);
+//
+//        return top;
+//
+//
+//        //for (MatOfPoint contour: contours) {
+////        for (Integer i = 0; i < contours.size(); i++) {
+////            MatOfPoint contour = contours.get(i);
+////
+////            logger.info("contour:" + contour.toString());
+////
+////            // 边框的凸包
+////            Imgproc.convexHull(contour, hull);
+////
+////            // 用凸包计算出新的轮廓点
+////            Point[] contourPoints = contour.toArray();
+////            int[] indices = hull.toArray();
+////            List<Point> newPoints = new ArrayList<>();
+////            for (int index : indices) {
+////                newPoints.add(contourPoints[index]);
+////            }
+////            MatOfPoint2f contourHull = new MatOfPoint2f();
+////            contourHull.fromList(newPoints);
+////
+////            // 多边形拟合凸包边框(此时的拟合的精度较低)
+////            Imgproc.approxPolyDP(contourHull, approx, Imgproc.arcLength(contourHull, true)*0.02, true);
+////
+////            // 筛选出面积大于某一阈值的，且四边形的各个角度都接近直角的凸四边形
+////            MatOfPoint approxf1 = new MatOfPoint();
+////            approx.convertTo(approxf1, CvType.CV_32S);
+////
+////            if (Math.abs(Imgproc.contourArea(approx)) > 40000 &&
+////                    Imgproc.isContourConvex(approxf1)) {
+////                //求最高点
+////                Point[] arr = approxf1.toArray();
+////                Point top = new Point(1920,1080);
+////                for(Point point : arr) {
+////                    if (point.y < top.y) {
+////                        top = point;
+////                    }
+////                }
+////                logger.info("opencvCenter top:" + top);
+////                Mat source;
+////                source = imread(path);
+////                Imgproc.rectangle(source, top,
+////                        new org.opencv.core.Point(top.x + 50, top.y + 50),
+////                        new Scalar(255, 0, 0));
+//////
+////                String resPath = dir + String.format("result3_%d.png", i);
+////                logger.info("opencvCenter resPath:" + resPath);
+////                imwrite(resPath, source);
+////
+////                //取大于300的小的
+////                if (top.y > 300 && end.y > top.y) {
+////                    end = top;
+////                }
+////            }
+////        }
+////        imwrite(dir + "/screen7.png", img);
+//    }
     public static Point searchTop(String path, Point start) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
@@ -819,7 +824,7 @@ public class ToolBitmap {
                         new org.opencv.core.Point(top.x + 50, top.y + 50),
                         new Scalar(255, 0, 0));
 
-                String resPath = dir + String.format("result4.png", i);
+                String resPath = dir + String.format("result4Top.png", i);
                 logger.info("opencvCenter resPath:" + resPath);
                 imwrite(resPath, source);
                 return top;

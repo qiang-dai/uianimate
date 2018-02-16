@@ -12,7 +12,11 @@
 ./platform-tools/adb -s 69DDU16519018529 shell
 
 4. 下载文件
-./adb -s 69DDU16519018529 pull /storage/emulated/0/Android/data/com.hqq.uiautomatorexample/cache/screenshots/uianim.png
+./adb -s 69DDU16519018529 pull /storage/emulated/0/Android/data/com.hqq.uiautomatorexample/cache/screen.png
+
+4.1 上传
+/Users/xinmei365/Downloads/android-ndk-r14b/platform-tools/adb -s 69DDU16519018529 push chess.png /storage/emulated/0/Android/data/com.hqq.uiautomatorexample/cache/
+/Users/xinmei365/Downloads/android-ndk-r14b/platform-tools/adb -s 69DDU16519018529 push white_dot.png /storage/emulated/0/Android/data/com.hqq.uiautomatorexample/cache/
 
 5. 下载opencv sdk，然后
 安装 opencv-manager

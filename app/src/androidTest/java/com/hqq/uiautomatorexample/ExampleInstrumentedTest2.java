@@ -65,17 +65,15 @@ public class ExampleInstrumentedTest2 {
 
     @Test
     public void testMainActivity() {
-        for (Integer i = 0; i < 10;i++) {
+        for (Integer i = 0; i < 1000;i++) {
             testMainActivity2();
             ToolShell.sleep(1500);
         }
     }
     public void testMainActivity2() {
         //截图
-        //File folder = new File(getTargetContext().getExternalCacheDir().getAbsolutePath() + "/screenshots/");
-
-        String shortName = "uianim.png";
-        String path = ToolShell.getStoragePath("/screenshots/") + shortName;
+        String shortName = "screen.png";
+        String path = ToolShell.getStoragePath("") + shortName;
         //截屏
         ToolBitmap.getScreenshot(path);
         //检测起点
@@ -94,6 +92,14 @@ public class ExampleInstrumentedTest2 {
 //        }
         //最终位置
         Point dest = new Point(top.x, right.y);
+        //微调：如果top 和 dest 差不多位置，就调整为 diff*3/5的位置
+        if (Math.abs(right.y - top.y) < 10) {
+            Double width = Math.abs(top.x - start.x);
+            if (width < 0) {
+                width = -width;
+            }
+            dest.y = top.y + (width)*4/7;
+        }
 
         logger.info("opencvCenter final start:" + start);
         logger.info("opencvCenter final top:" + top);
@@ -110,7 +116,7 @@ public class ExampleInstrumentedTest2 {
                 new Scalar(0, 255, 255));
 
         String dir = ToolShell.getFileDirectory(path);
-        String resPath = dir + "result7.png";
+        String resPath = dir + "result7StartDest.png";
         logger.info("opencvCenter resPath:" + resPath);
         imwrite(resPath, source);
 
@@ -118,7 +124,7 @@ public class ExampleInstrumentedTest2 {
         Double diff_y = dest.y - start.y;
         //计算距离
         Double diff = Math.sqrt(diff_x*diff_x + diff_y*diff_y);
-        Double diff2 = diff/12;
+        Double diff2 = diff/13+4;
         Integer duration = diff2.intValue();
         if (duration < 20) {
             duration = 20;

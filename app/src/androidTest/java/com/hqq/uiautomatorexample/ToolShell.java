@@ -53,7 +53,10 @@ public class ToolShell {
     }
 
     public static String getStoragePath(String part) {
-        File folder = new File(getTargetContext().getExternalCacheDir().getAbsolutePath() + "/" + part);
+        File folder = new File(getTargetContext().getExternalCacheDir().getAbsolutePath() + "/pics/" + part);
+        if (!folder.exists()) {
+            folder.mkdirs();
+        }
         return folder.getPath() + "/";
     }
 }
