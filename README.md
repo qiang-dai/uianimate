@@ -14,7 +14,10 @@
 4. 下载文件
 ./adb -s 69DDU16519018529 pull /storage/emulated/0/Android/data/com.hqq.uiautomatorexample/cache/screen.png
 
-4.1 上传
+4.1 下载目录
+./adb -s 69DDU16519018529 pull /storage/emulated/0/Android/data/com.hqq.uiautomatorexample/cache/pics .
+
+4.2 上传
 /Users/xinmei365/Downloads/android-ndk-r14b/platform-tools/adb -s 69DDU16519018529 push chess.png /storage/emulated/0/Android/data/com.hqq.uiautomatorexample/cache/
 /Users/xinmei365/Downloads/android-ndk-r14b/platform-tools/adb -s 69DDU16519018529 push white_dot.png /storage/emulated/0/Android/data/com.hqq.uiautomatorexample/cache/
 

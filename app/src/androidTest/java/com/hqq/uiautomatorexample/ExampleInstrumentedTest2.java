@@ -95,12 +95,20 @@ public class ExampleInstrumentedTest2 {
         //最终位置
         Point dest = new Point(top.x, right.y);
         //微调：如果top 和 dest 差不多位置，就调整为 diff*3/5的位置
-        if (Math.abs(right.y - top.y) < 10) {
-            Double width = Math.abs(top.x - start.x);
-            if (width < 0) {
-                width = -width;
-            }
-            dest.y = top.y + (width)*4/7;
+        Double width = Math.abs(top.x - start.x);
+        if (width < 0) {
+            width = -width;
+        }
+        Double y = top.y + (width)*4/7;
+
+        if (Math.abs(dest.y - top.y) < 10
+                || Math.abs(dest.y - top.y) > 300
+                || Math.abs(dest.y - y) > 250) {
+            logger.info("fix use y");
+            logger.info("fix Math.abs(dest.y - top.y):" + Math.abs(dest.y - top.y));
+            logger.info("fix Math.abs(dest.y - top.y):" + Math.abs(dest.y - top.y));
+            logger.info("fix Math.abs(dest.y - y):" + Math.abs(dest.y - y));
+            dest.y = y;
         }
 
         logger.info("opencvCenter final start:" + start);
