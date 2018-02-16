@@ -59,4 +59,10 @@ public class ToolShell {
         }
         return folder.getPath() + "/";
     }
+    private static String day = DateTimeUtils.getDay(-1, "yyyyMMdd-HH_mm_ss");
+    private static Integer stepCnt = 0;
+    public static String getSessinId() {
+        stepCnt += 1;
+        return day + String.format("%04d", stepCnt);
+    }
 }

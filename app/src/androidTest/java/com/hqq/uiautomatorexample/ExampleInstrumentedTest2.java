@@ -66,24 +66,26 @@ public class ExampleInstrumentedTest2 {
     @Test
     public void testMainActivity() {
         for (Integer i = 0; i < 1000;i++) {
-            testMainActivity2();
+            String sessinId = ToolShell.getSessinId();
+
+            testMainActivity2(sessinId);
             ToolShell.sleep(1500);
         }
     }
-    public void testMainActivity2() {
+    public void testMainActivity2(String sessinId) {
         //截图
-        String shortName = "screen.png";
+        String shortName = sessinId + "screen.png";
         String path = ToolShell.getStoragePath("") + shortName;
         //截屏
         ToolBitmap.getScreenshot(path);
         //检测起点
-        Point start = ToolBitmap.detectedChessTest(path);
+        Point start = ToolBitmap.detectedChessTest(path, sessinId);
         //检测opencv边缘中心
-        Point top = ToolBitmap.searchTop(path, start);
+        Point top = ToolBitmap.searchTop(path, start, sessinId);
         //检测白点
         //Point whiteDot = ToolBitmap.detectedWhiteDot(path);
         Point end = new Point(100, 200);
-        Point right = ToolBitmap.expandPixel(path, start, top);
+        Point right = ToolBitmap.expandPixel(path, start, top, sessinId);
 //        //根据白点修复位置
 //        if (Math.abs(whiteDot.x - top.x) < 10
 //                && Math.abs(whiteDot.y - right.y) < 50) {
@@ -116,7 +118,7 @@ public class ExampleInstrumentedTest2 {
                 new Scalar(0, 255, 255));
 
         String dir = ToolShell.getFileDirectory(path);
-        String resPath = dir + "result7StartDest.png";
+        String resPath = dir + sessinId + "result7StartDest.png";
         logger.info("opencvCenter resPath:" + resPath);
         imwrite(resPath, source);
 

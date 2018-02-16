@@ -85,17 +85,7 @@ public class ToolBitmap {
 
         storeBitmap(bitmap, picPath);
 
-//        ToolShell.sleep(1000);
-
         Mat img = imread(picPath);// 读入图片，将其转换为Mat
-
-//        double scale = 0.5;
-//        Size dsize = new Size(img.width() * scale, img.height() * scale); // 设置新图片的大小
-//        Mat img2 = new Mat(dsize, CvType.CV_16S);// 创建一个新的Mat（opencv的矩阵数据类型）
-//        Imgproc.resize(img, img2,dsize);
-//        String newPicPath = picPath.replace("uianim.png", "uianim2.png");
-//        imwrite(newPicPath, img2);
-
         return img;
     }
 
@@ -111,7 +101,7 @@ public class ToolBitmap {
         return new double[]{matchLoc.x + templete.width() / 2, matchLoc.y + templete.height(), templete.width(), templete.height()};
     }
 
-    public static Point detectedChessTest(String path) {
+    public static Point detectedChessTest(String path, String sessionId) {
         String dir = ToolShell.getFileDirectory(path);
         String chessPath = dir + "../chess.png";
 
@@ -146,47 +136,47 @@ public class ToolBitmap {
                 new org.opencv.core.Point(matchLoc.x + 30, matchLoc.y + 30),
                 new Scalar(255, 0, 255));
 
-        String resPath = dir + "result0Chess.png";
+        String resPath = dir + sessionId + "result0Chess.png";
         imwrite(resPath, source);
 
         return matchLoc;
     }
 
-    public static Point detectedWhiteDot(String path) {
-        String dir = ToolShell.getFileDirectory(path);
-        String chessPath = dir + "../white_dot.png";
-
-        logger.info("detectedWhiteDot path dir:" + path);
-        logger.info("detectedWhiteDot path chessPath:" + chessPath);
-        Mat source, templete;
-        source = imread(path);
-        templete = imread(chessPath);
-
-        logger.info("detectedWhiteDot:" + source.rows() + ", " + templete.rows());
-        logger.info("detectedWhiteDot:" + source.cols() + ", " + templete.cols());
-        logger.info("detectedWhiteDot:" + String.valueOf(source.rows() - templete.rows() + 1));
-        logger.info("detectedWhiteDot:" + String.valueOf(source.cols() - templete.cols() + 1));
-        Mat result = Mat.zeros(source.rows() - templete.rows() + 1,
-                source.cols() - templete.cols() + 1, CvType.CV_32FC1);
-        Imgproc.matchTemplate(source, templete, result, Imgproc.TM_SQDIFF_NORMED);
-        Core.normalize(result, result, 0, 1, Core.NORM_MINMAX, -1);
-        Core.MinMaxLocResult mlr = Core.minMaxLoc(result);
-        org.opencv.core.Point matchLoc = mlr.minLoc;
-
-        //System.out.println(matchLoc.x + ":" + matchLoc.y);
-        logger.info("detectedWhiteDot matchLoc:" + matchLoc.x + ":" + matchLoc.y);
-        //fix
-        matchLoc.x += templete.width()/2;
-        matchLoc.y += templete.height()/2;
-
-        Imgproc.rectangle(source, matchLoc,
-                new org.opencv.core.Point(matchLoc.x + templete.width(), matchLoc.y + templete.height()),
-                new Scalar(255, 0, 0));
-
-        String resPath = dir + "result2WhiteDot.png";
-        imwrite(resPath, source);
-        return matchLoc;
-    }
+//    public static Point detectedWhiteDot(String path) {
+//        String dir = ToolShell.getFileDirectory(path);
+//        String chessPath = dir + "../white_dot.png";
+//
+//        logger.info("detectedWhiteDot path dir:" + path);
+//        logger.info("detectedWhiteDot path chessPath:" + chessPath);
+//        Mat source, templete;
+//        source = imread(path);
+//        templete = imread(chessPath);
+//
+//        logger.info("detectedWhiteDot:" + source.rows() + ", " + templete.rows());
+//        logger.info("detectedWhiteDot:" + source.cols() + ", " + templete.cols());
+//        logger.info("detectedWhiteDot:" + String.valueOf(source.rows() - templete.rows() + 1));
+//        logger.info("detectedWhiteDot:" + String.valueOf(source.cols() - templete.cols() + 1));
+//        Mat result = Mat.zeros(source.rows() - templete.rows() + 1,
+//                source.cols() - templete.cols() + 1, CvType.CV_32FC1);
+//        Imgproc.matchTemplate(source, templete, result, Imgproc.TM_SQDIFF_NORMED);
+//        Core.normalize(result, result, 0, 1, Core.NORM_MINMAX, -1);
+//        Core.MinMaxLocResult mlr = Core.minMaxLoc(result);
+//        org.opencv.core.Point matchLoc = mlr.minLoc;
+//
+//        //System.out.println(matchLoc.x + ":" + matchLoc.y);
+//        logger.info("detectedWhiteDot matchLoc:" + matchLoc.x + ":" + matchLoc.y);
+//        //fix
+//        matchLoc.x += templete.width()/2;
+//        matchLoc.y += templete.height()/2;
+//
+//        Imgproc.rectangle(source, matchLoc,
+//                new org.opencv.core.Point(matchLoc.x + templete.width(), matchLoc.y + templete.height()),
+//                new Scalar(255, 0, 0));
+//
+//        String resPath = dir + "result2WhiteDot.png";
+//        imwrite(resPath, source);
+//        return matchLoc;
+//    }
 
     public static Integer getMinCnt(Map<Integer, Integer> cntMap) {
         Integer min = 10000;
@@ -414,7 +404,7 @@ public class ToolBitmap {
         System.exit(0);
         return top;
     }
-    public static Point expandPixel(String path, Point start, Point top) {
+    public static Point expandPixel(String path, Point start, Point top, String sessionId) {
         Point end = new Point(100, 300);
 
         String dir = ToolShell.getFileDirectory(path);
@@ -425,16 +415,16 @@ public class ToolBitmap {
 
         //彩色转灰度
         Imgproc.cvtColor(img, img, Imgproc.COLOR_BGR2GRAY);
-        imwrite(dir + "/screen3.png", img);
+        imwrite(dir + sessionId + "screen3.png", img);
         // 高斯滤波，降噪
         Imgproc.GaussianBlur(img, img, new Size(3, 3), 2, 2);
-        imwrite(dir + "/screen4.png", img);
+        imwrite(dir + sessionId + "screen4.png", img);
         // Canny边缘检测
         Imgproc.Canny(img, img, 3, 8, 3, false);
-        imwrite(dir + "/screen5.png", img);
+        imwrite(dir + sessionId + "screen5.png", img);
         // 膨胀，连接边缘
         Imgproc.dilate(img, img, new Mat(), new Point(-1, -1), 3, 1, new Scalar(1));
-        imwrite(dir + "/screen6.png", img);
+        imwrite(dir + sessionId + "screen6.png", img);
         List<MatOfPoint> contours = new ArrayList<>();
         Mat hierarchy = new Mat();
         Imgproc.findContours(img, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
@@ -460,7 +450,7 @@ public class ToolBitmap {
                 new org.opencv.core.Point(pointRight.x + 50, pointRight.y + 50),
                 new Scalar(255, 255, 255));
 
-        String resPath = dir + "result6TopRight.png";
+        String resPath = dir + sessionId + "result6TopRight.png";
         logger.info("opencvCenter resPath:" + resPath);
         logger.info("pointTop:" + pointTop);
         logger.info("pointRight:" + pointRight);
@@ -723,7 +713,7 @@ public class ToolBitmap {
 ////        }
 ////        imwrite(dir + "/screen7.png", img);
 //    }
-    public static Point searchTop(String path, Point start) {
+    public static Point searchTop(String path, Point start, String sessionId) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
         Bitmap mBitmap = BitmapFactory.decodeFile(path, options);
@@ -808,6 +798,10 @@ public class ToolBitmap {
                         posCnt += 1;
                     }
                 }
+                //特殊情况
+                if (posCnt == 0) {
+                    continue;
+                }
 
                 logger.info("posList:" + posList.toArray());
                 for (Integer k = 0; k < posList.size(); k++) {
@@ -824,7 +818,7 @@ public class ToolBitmap {
                         new org.opencv.core.Point(top.x + 50, top.y + 50),
                         new Scalar(255, 0, 0));
 
-                String resPath = dir + String.format("result4Top.png", i);
+                String resPath = dir + sessionId + "result4Top.png";
                 logger.info("opencvCenter resPath:" + resPath);
                 imwrite(resPath, source);
                 return top;
