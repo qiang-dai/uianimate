@@ -36,6 +36,7 @@ import static android.support.test.InstrumentationRegistry.getTargetContext;
 import static org.opencv.imgcodecs.Imgcodecs.imread;
 import static org.opencv.imgcodecs.Imgcodecs.imwrite;
 import static org.opencv.imgproc.Imgproc.CHAIN_APPROX_SIMPLE;
+import static org.opencv.imgproc.Imgproc.INTER_AREA;
 import static org.opencv.imgproc.Imgproc.RETR_EXTERNAL;
 import static org.opencv.imgproc.Imgproc.rectangle;
 
@@ -229,206 +230,48 @@ public class ToolBitmap {
         return color;
     }
 
-    public static Integer getLeast(Map<Integer, Integer> cntMap, Integer max) {
-        for (Integer k : cntMap.keySet()) {
-            Integer v = cntMap.get(k);
-            if (v != max) {
-                return k;
-            }
-        }
-        return -1;
-    }
+//    public static Integer getLeast(Map<Integer, Integer> cntMap, Integer max) {
+//        for (Integer k : cntMap.keySet()) {
+//            Integer v = cntMap.get(k);
+//            if (v != max) {
+//                return k;
+//            }
+//        }
+//        return -1;
+//    }
+//
+//    public static Boolean sortPoint(Point p1, Point p2) {
+//        if (p1.x < p2.x) {
+//            return true;
+//        }
+//        if (p1.y < p2.y) {
+//            return true;
+//        }
+//        return false;
+//    }
+//    // 根据三个点计算中间那个点的夹角   pt1 pt0 pt2
+//    private static double getAngle(Point pt1, Point pt2, Point pt0)
+//    {
+//        double dx1 = pt1.x - pt0.x;
+//        double dy1 = pt1.y - pt0.y;
+//        double dx2 = pt2.x - pt0.x;
+//        double dy2 = pt2.y - pt0.y;
+//        return (dx1*dx2 + dy1*dy2)/Math.sqrt((dx1*dx1 + dy1*dy1)*(dx2*dx2 + dy2*dy2) + 1e-10);
+//    }
+//
+//    private static void showAllColor(Bitmap bitmap) {
+//        for (Integer j = 0; j < bitmap.getHeight();j+=100) {
+//            for (Integer i = 0; i < bitmap.getWidth(); i+=1) {
+//                Integer color = bitmap.getPixel(i, j);
+//                int r = Color.red(color);
+//                int g = Color.green(color);
+//                int b = Color.blue(color);
+//                logger.info("showAllColor findWhitePoint["+i+","+j+"]:" + color);
+//                logger.info("r,g,b:" + r + "," + g + "," + b);
+//            }
+//        }
+//    }
 
-    public static Boolean sortPoint(Point p1, Point p2) {
-        if (p1.x < p2.x) {
-            return true;
-        }
-        if (p1.y < p2.y) {
-            return true;
-        }
-        return false;
-    }
-    // 根据三个点计算中间那个点的夹角   pt1 pt0 pt2
-    private static double getAngle(Point pt1, Point pt2, Point pt0)
-    {
-        double dx1 = pt1.x - pt0.x;
-        double dy1 = pt1.y - pt0.y;
-        double dx2 = pt2.x - pt0.x;
-        double dy2 = pt2.y - pt0.y;
-        return (dx1*dx2 + dy1*dy2)/Math.sqrt((dx1*dx1 + dy1*dy1)*(dx2*dx2 + dy2*dy2) + 1e-10);
-    }
-
-    private static Boolean isWhite(Bitmap bitmap, Point point) {
-        Integer posx = Double.valueOf(point.x).intValue();
-        Integer posy = Double.valueOf(point.y).intValue();
-
-        if (posx < 0
-                || posx >= bitmap.getWidth()
-                || posy < 0
-                || posy >= bitmap.getHeight()) {
-            return false;
-        }
-        Integer color = bitmap.getPixel(posx, posy);
-
-        int r = Color.red(color);
-        int g = Color.green(color);
-        int b = Color.blue(color);
-        if (r > 250 && g > 250 && b > 250) {
-            return true;
-        }
-        return false;
-    }
-
-    private static Point scanAllWhitePoint(Bitmap bitmap, Point first, Point start) {
-        //500*500区域
-        List<Point> whiteList = new ArrayList<>();
-        Map<Point, Boolean> pointMap = new HashMap<>();
-        whiteList.add(first);
-
-        Integer startPos = 0;
-        Map<String, Boolean> usedMap = new HashMap<>();
-
-
-        String dir = ToolShell.getStoragePath("");
-        String chessPath = dir + "../chess.png";
-        Mat templete = imread(chessPath);
-
-        Double x0 = first.x;
-        Double y0 = first.y;
-        Double x1 = start.x - 10 - templete.width()/2;
-        Double y1 = start.y;
-        if (Double.compare(x0, x1) > 0) {
-            x1 = bitmap.getWidth() - 1.0;
-        }
-
-        for (Integer i = 0;i < 500*500; i++) {
-            if (whiteList.size() == 0) {
-                break;
-            }
-            if (startPos >= whiteList.size()) {
-                break;
-            }
-            Point curPoint = whiteList.get(startPos);
-            startPos+=1;
-
-            Point left = new Point(curPoint.x-1, curPoint.y);
-            Point right = new Point(curPoint.x+1, curPoint.y);
-            Point top = new Point(curPoint.x, curPoint.y-1);
-            Point bottom = new Point(curPoint.x, curPoint.y+1);
-            if (!usedMap.containsKey(left.toString())) {
-                addWhiteList(bitmap, left, whiteList, x0, x1, y0, y1);
-            }
-
-            if (!usedMap.containsKey(right.toString())) {
-                addWhiteList(bitmap, right, whiteList, x0, x1, y0, y1);
-            }
-            if (!usedMap.containsKey(top.toString())) {
-                addWhiteList(bitmap, top, whiteList, x0, x1, y0, y1);
-            }
-            if (!usedMap.containsKey(bottom.toString())) {
-                addWhiteList(bitmap, bottom, whiteList, x0, x1, y0, y1);
-            }
-
-            usedMap.put(left.toString(), true);
-            usedMap.put(right.toString(), true);
-            usedMap.put(top.toString(), true);
-            usedMap.put(bottom.toString(), true);
-        }
-        //输出最右侧的边
-        Point pointRight = whiteList.get(0);
-        for (Integer i = 0;i < whiteList.size(); i++) {
-            Point curPoint = whiteList.get(i);
-            if (Double.compare(curPoint.x, pointRight.x) > 0) {
-                pointRight = curPoint;
-            }
-            if (Double.compare(curPoint.x, pointRight.x) == 0
-                    && Double.compare(curPoint.y, pointRight.y) < 0) {
-                pointRight = curPoint;
-            }
-        }
-        return  pointRight;
-    }
-
-    private static void showAllColor(Bitmap bitmap) {
-        for (Integer j = 0; j < bitmap.getHeight();j+=100) {
-            for (Integer i = 0; i < bitmap.getWidth(); i+=1) {
-                Integer color = bitmap.getPixel(i, j);
-                int r = Color.red(color);
-                int g = Color.green(color);
-                int b = Color.blue(color);
-                logger.info("showAllColor findWhitePoint["+i+","+j+"]:" + color);
-                logger.info("r,g,b:" + r + "," + g + "," + b);
-            }
-        }
-    }
-    private static void addWhiteList(Bitmap bitmap,
-                                     Point point, List<Point> whiteList,
-                                     Double left, Double right,
-                                     Double top, Double bottom) {
-        if (Double.compare(point.x, left) >= 0
-                && Double.compare(point.x, right) < 0
-                && Double.compare(point.y, top) >= 0
-                && Double.compare(point.y, bottom) < 0) {
-
-            if (isWhite(bitmap, point)) {
-                whiteList.add(point);
-            }
-        }
-    }
-    private static void addList(Point point, List<Point> whiteList,
-                           Double left, Double right,
-                           Double top, Double bottom) {
-        if (Double.compare(point.x, left) >= 0
-                && Double.compare(point.x, right) < 0
-                && Double.compare(point.y, top) >= 0
-                && Double.compare(point.y, bottom) < 0) {
-            whiteList.add(point);
-        }
-    }
-    private static Point findWhitePoint(Bitmap bitmap, Point first) {
-        //500*500区域
-        List<Point> whiteList = new ArrayList<>();
-        Map<Point, Boolean> pointMap = new HashMap<>();
-        whiteList.add(first);
-
-        Map<String, Boolean> usedMap = new HashMap<>();
-        for (Integer i = 0;i < 500*500; i++) {
-            if (whiteList.size() == 0) {
-                break;
-            }
-            Point curPoint = whiteList.get(0);
-            whiteList.remove(0);
-
-            Point left = new Point(curPoint.x-1, curPoint.y);
-            Point right = new Point(curPoint.x+1, curPoint.y);
-            Point top = new Point(curPoint.x, curPoint.y-1);
-            Point bottom = new Point(curPoint.x, curPoint.y+1);
-            if (!usedMap.containsKey(left.toString())) {
-                addList(left, whiteList, first.x, first.x + 500, first.y, first.y + 500);
-            }
-            if (!usedMap.containsKey(right.toString())) {
-                addList(right, whiteList, first.x, top.x + 500, first.y, first.y + 500);
-            }
-            if (!usedMap.containsKey(top.toString())) {
-                addList(top, whiteList, first.x, first.x + 500, first.y, first.y + 500);
-            }
-            if (!usedMap.containsKey(bottom.toString())) {
-                addList(bottom, whiteList, first.x, first.x + 500, top.y, first.y + 500);
-            }
-
-            usedMap.put(left.toString(), true);
-            usedMap.put(right.toString(), true);
-            usedMap.put(top.toString(), true);
-            usedMap.put(bottom.toString(), true);
-
-            if (isWhite(bitmap, curPoint)) {
-                return curPoint;
-            }
-
-        }
-        System.exit(0);
-        return first;
-    }
     public static Point expandPixel(String path, Point start, Point top, String sessionId) {
         Point end = new Point(100, 300);
 
@@ -465,8 +308,8 @@ public class ToolBitmap {
         Bitmap bitmap = Bitmap.createBitmap(img.cols(), img.rows(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(img, bitmap);
 
-        Point pointTop = findWhitePoint(bitmap, top);
-        Point pointRight = scanAllWhitePoint(bitmap, pointTop, start);
+        Point pointTop = PixelSpider.findWhitePoint(bitmap, top);
+        Point pointRight = PixelSpider.scanAllWhitePoint(bitmap, pointTop, start);
 
         Imgproc.rectangle(img, pointTop,
                 new org.opencv.core.Point(pointTop.x + 50, pointTop.y + 50),
@@ -836,31 +679,49 @@ public class ToolBitmap {
                     }
                 //}
                 //查找最长子序列
-                Integer posSum = 0;
-                Integer posCnt = 0;
-                for (Integer j = 0; j < posList.size(); j++) {
-                    Integer nextJ = j + 1;
-                    if (nextJ >= posList.size()) {
-                        break;
-                    }
+                List<Double> scoreList = new ArrayList<>();
 
-                    if (posList.get(nextJ) == posList.get(j) + 1) {
-                        posSum += posList.get(j);
-                        posCnt += 1;
+                for (Integer j = 0; j < posList.size(); j++) {
+                    scoreList.add(getDistanceSum(posList, posList.get(j)));
+//                    Integer nextJ = j + 1;
+//                    if (nextJ >= posList.size()) {
+//                        break;
+//                    }
+//
+//                    if (posList.get(nextJ) == posList.get(j) + 1) {
+//                        posSum += posList.get(j);
+//                        posCnt += 1;
+//                    }
+                }
+                //获得最大值
+                Double maxSum = 0.0;
+                Integer maxPos = 0;
+                for (Integer j = 0; j < scoreList.size(); j++) {
+                    if (Double.compare(scoreList.get(j), maxSum) > 0) {
+                        maxPos = j;
+                        maxSum = scoreList.get(j);
                     }
                 }
-                //特殊情况
-                if (posCnt == 0) {
-                    continue;
-                }
+//                //特殊情况
+//                if (posCnt == 0) {
+//                    continue;
+//                }
 
                 logger.info("posList:" + posList.toArray());
                 for (Integer k = 0; k < posList.size(); k++) {
                     logger.info("["+k+"]:" + posList.get(k).toString());
                 }
+                if (maxSum < 3) {
+                    continue;
+                }
 
                 //取中点位置
-                Point top = new Point(posSum/posCnt, i);
+                //Point top = new Point(posSum/posCnt, i);
+                Point top = new Point(posList.get(maxPos), i);
+                //1：1
+                if (Double.compare(Math.abs(top.y - start.y), Math.abs(top.x - start.x)) > 0) {
+                    continue;
+                }
 
                 Mat source;
                 source = imread(path);
@@ -876,6 +737,17 @@ public class ToolBitmap {
         }
         startTime = System.currentTimeMillis();
         return point;
+    }
+    private static Double getDistance(Integer first, Integer second) {
+        Integer diff = Math.abs(first - second) + 1;
+        return 1.0/diff;
+    }
+    private static Double getDistanceSum(List<Integer> posList, Integer pos) {
+        Double sum = 0.0;
+        for (Integer i = 0; i < posList.size(); i++) {
+            sum += getDistance(pos, posList.get(i));
+        }
+        return sum;
     }
     private static void getProperDistance(Point point, Point start) {
 //        Double diff_x = point.x - start.x;

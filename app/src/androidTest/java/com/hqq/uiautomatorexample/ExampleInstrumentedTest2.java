@@ -65,6 +65,7 @@ public class ExampleInstrumentedTest2 {
 
     @Test
     public void testMainActivity() {
+        ToolShell.sleep(1500);
         for (Integer i = 0; i < 100;i++) {
             String sessinId = ToolShell.getSessinId();
 
@@ -134,7 +135,7 @@ public class ExampleInstrumentedTest2 {
         Double diff_y = dest.y - start.y;
         //计算距离
         Double diff = Math.sqrt(diff_x*diff_x + diff_y*diff_y);
-        Double diff2 = diff/13+4;
+        Double diff2 = diff/12;
         Integer duration = diff2.intValue();
         if (duration < 20) {
             duration = 20;
