@@ -65,7 +65,7 @@ public class ExampleInstrumentedTest2 {
 
     @Test
     public void testMainActivity() {
-        for (Integer i = 0; i < 1000;i++) {
+        for (Integer i = 0; i < 100;i++) {
             String sessinId = ToolShell.getSessinId();
 
             testMainActivity2(sessinId);

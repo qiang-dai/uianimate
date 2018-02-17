@@ -37,6 +37,7 @@ import static org.opencv.imgcodecs.Imgcodecs.imread;
 import static org.opencv.imgcodecs.Imgcodecs.imwrite;
 import static org.opencv.imgproc.Imgproc.CHAIN_APPROX_SIMPLE;
 import static org.opencv.imgproc.Imgproc.RETR_EXTERNAL;
+import static org.opencv.imgproc.Imgproc.rectangle;
 
 /**
  * Created by xinmei365 on 2018/2/14.
@@ -257,152 +258,176 @@ public class ToolBitmap {
         return (dx1*dx2 + dy1*dy2)/Math.sqrt((dx1*dx1 + dy1*dy1)*(dx2*dx2 + dy2*dy2) + 1e-10);
     }
 
-    private static Boolean isWhite(Integer color) {
+    private static Boolean isWhite(Bitmap bitmap, Point point) {
+        Integer posx = Double.valueOf(point.x).intValue();
+        Integer posy = Double.valueOf(point.y).intValue();
+
+        if (posx < 0
+                || posx >= bitmap.getWidth()
+                || posy < 0
+                || posy >= bitmap.getHeight()) {
+            return false;
+        }
+        Integer color = bitmap.getPixel(posx, posy);
+
         int r = Color.red(color);
         int g = Color.green(color);
         int b = Color.blue(color);
-        //if (r == 255 && g == 255 && b == 255) {
         if (r > 250 && g > 250 && b > 250) {
             return true;
         }
         return false;
     }
 
-    private static Point getRightWhite(Bitmap bitmap, Point top) {
-        Point point = new Point(top.x, top.y);
+    private static Point scanAllWhitePoint(Bitmap bitmap, Point first, Point start) {
+        //500*500区域
+        List<Point> whiteList = new ArrayList<>();
+        Map<Point, Boolean> pointMap = new HashMap<>();
+        whiteList.add(first);
 
-        Integer downCnt = 0;
-        for (Integer i = 0; i < 500; i++) {
-            //右，右下，下
-            Integer posx = Double.valueOf(point.x).intValue();
-            Integer posy = Double.valueOf(point.y).intValue();
+        Integer startPos = 0;
+        Map<String, Boolean> usedMap = new HashMap<>();
 
-            if (posx == bitmap.getWidth() - 1) {
+
+        String dir = ToolShell.getStoragePath("");
+        String chessPath = dir + "../chess.png";
+        Mat templete = imread(chessPath);
+
+        Double x0 = first.x;
+        Double y0 = first.y;
+        Double x1 = start.x - 10 - templete.width()/2;
+        Double y1 = start.y;
+        if (Double.compare(x0, x1) > 0) {
+            x1 = bitmap.getWidth() - 1.0;
+        }
+
+        for (Integer i = 0;i < 500*500; i++) {
+            if (whiteList.size() == 0) {
                 break;
             }
-
-            Integer color0 = bitmap.getPixel(posx, posy);
-            Integer color1 = bitmap.getPixel(posx+1, posy);
-            Integer color2 = bitmap.getPixel(posx+1, posy+1);
-            Integer color3 = bitmap.getPixel(posx, posy+1);
-
-            if (isWhite(color2)) {
-                point.x += 1;
-                point.y += 1;
-
-                downCnt = 0;
-            } else if (isWhite(color1)) {
-                point.x += 1;
-
-                downCnt = 0;
-            } else if (isWhite(color3)){
-                point.y += 1;
-
-                downCnt += 1;
-            } else {
+            if (startPos >= whiteList.size()) {
                 break;
             }
-            if (downCnt >= 3) {
-                break;
+            Point curPoint = whiteList.get(startPos);
+            startPos+=1;
+
+            Point left = new Point(curPoint.x-1, curPoint.y);
+            Point right = new Point(curPoint.x+1, curPoint.y);
+            Point top = new Point(curPoint.x, curPoint.y-1);
+            Point bottom = new Point(curPoint.x, curPoint.y+1);
+            if (!usedMap.containsKey(left.toString())) {
+                addWhiteList(bitmap, left, whiteList, x0, x1, y0, y1);
+            }
+
+            if (!usedMap.containsKey(right.toString())) {
+                addWhiteList(bitmap, right, whiteList, x0, x1, y0, y1);
+            }
+            if (!usedMap.containsKey(top.toString())) {
+                addWhiteList(bitmap, top, whiteList, x0, x1, y0, y1);
+            }
+            if (!usedMap.containsKey(bottom.toString())) {
+                addWhiteList(bitmap, bottom, whiteList, x0, x1, y0, y1);
+            }
+
+            usedMap.put(left.toString(), true);
+            usedMap.put(right.toString(), true);
+            usedMap.put(top.toString(), true);
+            usedMap.put(bottom.toString(), true);
+        }
+        //输出最右侧的边
+        Point pointRight = whiteList.get(0);
+        for (Integer i = 0;i < whiteList.size(); i++) {
+            Point curPoint = whiteList.get(i);
+            if (Double.compare(curPoint.x, pointRight.x) > 0) {
+                pointRight = curPoint;
+            }
+            if (Double.compare(curPoint.x, pointRight.x) == 0
+                    && Double.compare(curPoint.y, pointRight.y) < 0) {
+                pointRight = curPoint;
             }
         }
-        return point;
+        return  pointRight;
     }
 
     private static void showAllColor(Bitmap bitmap) {
         for (Integer j = 0; j < bitmap.getHeight();j+=100) {
             for (Integer i = 0; i < bitmap.getWidth(); i+=1) {
-                Integer color = bitmap.getPixel(i, i);
+                Integer color = bitmap.getPixel(i, j);
                 int r = Color.red(color);
                 int g = Color.green(color);
                 int b = Color.blue(color);
-                logger.info("showAllColor getWhiteDot["+i+","+j+"]:" + color);
+                logger.info("showAllColor findWhitePoint["+i+","+j+"]:" + color);
                 logger.info("r,g,b:" + r + "," + g + "," + b);
             }
         }
     }
-    private static Point getWhiteDot(Bitmap bitmap, Point top) {
-        Integer posx = Double.valueOf(top.x).intValue();
-        Integer posy = Double.valueOf(top.y).intValue();
+    private static void addWhiteList(Bitmap bitmap,
+                                     Point point, List<Point> whiteList,
+                                     Double left, Double right,
+                                     Double top, Double bottom) {
+        if (Double.compare(point.x, left) >= 0
+                && Double.compare(point.x, right) < 0
+                && Double.compare(point.y, top) >= 0
+                && Double.compare(point.y, bottom) < 0) {
 
-//        for(Integer i = -30; i < 30; i++) {
-//            Integer color = bitmap.getPixel(posx+i, posy+i);
-//            logger.info("getWhiteDot["+posx+","+posy+"]:" + color);
-//            int r = Color.red(color);
-//            int g = Color.green(color);
-//            int b = Color.blue(color);
-//            logger.info("r,g,b:" + r + "," + g + "," + b);
-//        }
-
-        //向右
-        for (Integer i = 0; i< 80; i++) {
-            Integer color = bitmap.getPixel(posx, posy);
-            logger.info("["+posx+","+posy+"]:" + color);
-            int r = Color.red(color);
-            int g = Color.green(color);
-            int b = Color.blue(color);
-            logger.info("r,g,b:" + r + "," + g + "," + b);
-
-            if (r == 255 && g == 255 && b == 255) {
-                Point point = new Point(posx, posy);
-                return point;
+            if (isWhite(bitmap, point)) {
+                whiteList.add(point);
             }
-            posx+=1;
         }
-
-        //向右下方
-        posx = Double.valueOf(top.x).intValue();
-        posy = Double.valueOf(top.y).intValue();
-        for (Integer i = 0; i< 80; i++) {
-            Integer color = bitmap.getPixel(posx, posy);
-            logger.info("["+posx+","+posy+"]:" + color);
-            int r = Color.red(color);
-            int g = Color.green(color);
-            int b = Color.blue(color);
-            logger.info("r,g,b:" + r + "," + g + "," + b);
-
-            if (r == 255 && g == 255 && b == 255) {
-                Point point = new Point(posx, posy);
-                return point;
-            }
-            posx+=1;
-            posy+=1;
+    }
+    private static void addList(Point point, List<Point> whiteList,
+                           Double left, Double right,
+                           Double top, Double bottom) {
+        if (Double.compare(point.x, left) >= 0
+                && Double.compare(point.x, right) < 0
+                && Double.compare(point.y, top) >= 0
+                && Double.compare(point.y, bottom) < 0) {
+            whiteList.add(point);
         }
-        //向下方
-        posx = Double.valueOf(top.x).intValue();
-        posy = Double.valueOf(top.y).intValue();
-        for (Integer i = 0; i< 80; i++) {
-            Integer color = bitmap.getPixel(posx, posy);
-            logger.info("["+posx+","+posy+"]:" + color);
-            int r = Color.red(color);
-            int g = Color.green(color);
-            int b = Color.blue(color);
-            logger.info("r,g,b:" + r + "," + g + "," + b);
+    }
+    private static Point findWhitePoint(Bitmap bitmap, Point first) {
+        //500*500区域
+        List<Point> whiteList = new ArrayList<>();
+        Map<Point, Boolean> pointMap = new HashMap<>();
+        whiteList.add(first);
 
-            if (r == 255 && g == 255 && b == 255) {
-                Point point = new Point(posx, posy);
-                return point;
+        Map<String, Boolean> usedMap = new HashMap<>();
+        for (Integer i = 0;i < 500*500; i++) {
+            if (whiteList.size() == 0) {
+                break;
             }
-            posy+=1;
-        }
+            Point curPoint = whiteList.get(0);
+            whiteList.remove(0);
 
-        //向上
-        for (Integer i = 0; i< 80; i++) {
-            Integer color = bitmap.getPixel(posx, posy);
-            logger.info("["+posx+","+posy+"]:" + color);
-            int r = Color.red(color);
-            int g = Color.green(color);
-            int b = Color.blue(color);
-            logger.info("r,g,b:" + r + "," + g + "," + b);
-
-            if (r == 255 && g == 255 && b == 255) {
-                Point point = new Point(posx, posy);
-                return point;
+            Point left = new Point(curPoint.x-1, curPoint.y);
+            Point right = new Point(curPoint.x+1, curPoint.y);
+            Point top = new Point(curPoint.x, curPoint.y-1);
+            Point bottom = new Point(curPoint.x, curPoint.y+1);
+            if (!usedMap.containsKey(left.toString())) {
+                addList(left, whiteList, first.x, first.x + 500, first.y, first.y + 500);
             }
-            posy -=1;
+            if (!usedMap.containsKey(right.toString())) {
+                addList(right, whiteList, first.x, top.x + 500, first.y, first.y + 500);
+            }
+            if (!usedMap.containsKey(top.toString())) {
+                addList(top, whiteList, first.x, first.x + 500, first.y, first.y + 500);
+            }
+            if (!usedMap.containsKey(bottom.toString())) {
+                addList(bottom, whiteList, first.x, first.x + 500, top.y, first.y + 500);
+            }
+
+            usedMap.put(left.toString(), true);
+            usedMap.put(right.toString(), true);
+            usedMap.put(top.toString(), true);
+            usedMap.put(bottom.toString(), true);
+
+            if (isWhite(bitmap, curPoint)) {
+                return curPoint;
+            }
+
         }
         System.exit(0);
-        return top;
+        return first;
     }
     public static Point expandPixel(String path, Point start, Point top, String sessionId) {
         Point end = new Point(100, 300);
@@ -440,14 +465,25 @@ public class ToolBitmap {
         Bitmap bitmap = Bitmap.createBitmap(img.cols(), img.rows(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(img, bitmap);
 
-        Point pointTop = getWhiteDot(bitmap, top);
-        Point pointRight = getRightWhite(bitmap, pointTop);
+        Point pointTop = findWhitePoint(bitmap, top);
+        Point pointRight = scanAllWhitePoint(bitmap, pointTop, start);
 
         Imgproc.rectangle(img, pointTop,
                 new org.opencv.core.Point(pointTop.x + 50, pointTop.y + 50),
                 new Scalar(0, 0, 0));
+        pointTop.x +=1;
+        pointTop.y +=1;
+        Imgproc.rectangle(img, pointTop,
+                new org.opencv.core.Point(pointTop.x + 51, pointTop.y + 51),
+                new Scalar(255, 255, 255));
         Imgproc.rectangle(img, pointRight,
                 new org.opencv.core.Point(pointRight.x + 50, pointRight.y + 50),
+                new Scalar(0, 0, 0));
+
+        pointRight.x += 1;
+        pointRight.y += 1;
+        Imgproc.rectangle(img, pointRight,
+                new org.opencv.core.Point(pointRight.x + 51, pointRight.y + 51),
                 new Scalar(255, 255, 255));
 
         String resPath = dir + sessionId + "result6TopRight.png";
@@ -495,8 +531,8 @@ public class ToolBitmap {
 //        Bitmap bitmap = Bitmap.createBitmap(img.cols(), img.rows(), Bitmap.Config.ARGB_8888);
 //        Utils.matToBitmap(img, bitmap);
 //
-//        Point pointTop = getWhiteDot(bitmap, top);
-//        Point pointRight=getRightWhite(bitmap, pointTop);
+//        Point pointTop = findWhitePoint(bitmap, top);
+//        Point pointRight=scanAllWhitePoint(bitmap, pointTop);
 //
 //        Imgproc.rectangle(img, pointTop,
 //                new org.opencv.core.Point(pointTop.x + 50, pointTop.y + 50),
@@ -734,10 +770,25 @@ public class ToolBitmap {
         mArrayColorLengh = mBitmapWidth * mBitmapHeight;
         mArrayColor = new int[mArrayColorLengh];
         int count = 0;
-        for (int i = 300; i < mBitmapHeight; i++) {
+        //限制区域
+        Double left = 0.0;
+        Double right = 1.0*mBitmapWidth;
+
+        String dir = ToolShell.getFileDirectory(path);
+        String chessPath = dir + "../chess.png";
+        Mat templete = imread(chessPath);
+
+        if (start.x < mBitmapWidth/2) {
+            left = start.x + templete.width()/2 + 10;
+        } else {
+            right = start.x - templete.width()/2 - 10;
+        }
+        Double areaWidth = right - left;
+
+        for (int i = 300; i < start.y; i++) {
             //统计不同颜色点的个数
             Map<Integer, Integer> pixelCntMap = new HashMap<>();
-            for (int j = 0; j < mBitmapWidth; j++) {
+            for (int j = left.intValue(); j < right.intValue(); j++) {
                 //获得Bitmap 图片中每一个点的color颜色值
                 int color = mBitmap.getPixel(j, i);
                 //将颜色值存在一个数组中 方便后面修改
@@ -766,9 +817,9 @@ public class ToolBitmap {
             if (pixelCntMap.size() > 1) {
                 //计算最大量颜色的比例
                 Integer max = getMaxCnt(pixelCntMap);
-                logger.info("["+ i + "]" + "getMaxCnt max:" + max + ", rate:" + max*100.0/mBitmapWidth + "%");
+                logger.info("["+ i + "]" + "getMaxCnt max:" + max + ", rate:" + max*100.0/areaWidth + "%");
 
-                Integer min = mBitmapWidth-max;//getMinCnt(pixelCntMap);
+                Integer min = (right.intValue()-left.intValue()) - max;//getMinCnt(pixelCntMap);
                 if (min < 20) {
                     continue;
                 }
@@ -777,7 +828,7 @@ public class ToolBitmap {
 
                 Integer maxColor = getMaxColor(pixelCntMap);
                 //for (Integer k = i; k < i+10; k++) {
-                    for (Integer j = 0; j < mBitmapWidth; j++) {
+                    for (Integer j = left.intValue(); j < right.intValue(); j++) {
                         Integer currentColor = mBitmap.getPixel(j, i);
                         if (Integer.compare(currentColor, maxColor) != 0) {
                             posList.add(j);
@@ -810,7 +861,6 @@ public class ToolBitmap {
 
                 //取中点位置
                 Point top = new Point(posSum/posCnt, i);
-                String dir = ToolShell.getFileDirectory(path);
 
                 Mat source;
                 source = imread(path);
